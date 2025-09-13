@@ -1,6 +1,6 @@
 # Authentication Implementation
 
-This document explains how Firebase Authentication is implemented in the CompanyManager Lite application.
+This document explains how Firebase Authentication is implemented in the Oshud Kini Management System application.
 
 ## Overview
 

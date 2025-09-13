@@ -20,7 +20,7 @@ const Header = ({ setSidebarOpen }) => {
     <header className="bg-blue-600 text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <h1 className="text-xl font-bold">CompanyManager Lite</h1>
+          <h1 className="text-xl font-bold">Oshud Kini Management System</h1>
         </div>
         
         {/* Mobile menu button */}

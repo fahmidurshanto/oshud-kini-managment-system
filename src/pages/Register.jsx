@@ -49,7 +49,7 @@ const Register = () => {
       <div className="max-w-md w-full space-y-8 p-6 md:p-10 bg-white rounded-xl shadow-lg">
         <div>
           <h2 className="mt-6 text-center text-2xl md:text-3xl font-extrabold text-gray-900">
-            CompanyManager Lite
+            Oshud Kini Management System
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Create a new account

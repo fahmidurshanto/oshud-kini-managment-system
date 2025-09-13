@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This document explains how to deploy the CompanyManager Lite application to various platforms, with specific focus on Vercel.
+This document explains how to deploy the Oshud Kini Management System application to various platforms, with specific focus on Vercel.
 
 ## Vercel Deployment
 

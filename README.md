@@ -1,4 +1,4 @@
-# CompanyManager Lite
+# Oshud Kini Management System
 
 This is a React-based web application for managing company products, employees, and salaries with Firebase authentication.
 

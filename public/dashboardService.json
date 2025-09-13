@@ -1,0 +1,54 @@
+{
+  "stats": [
+    {
+      "title": "Total Products",
+      "value": 24,
+      "icon": "📦",
+      "color": "bg-blue-500"
+    },
+    {
+      "title": "Total Employees",
+      "value": 12,
+      "icon": "👥",
+      "color": "bg-green-500"
+    },
+    {
+      "title": "This Month's Salary",
+      "value": "৳12,450",
+      "icon": "💰",
+      "color": "bg-yellow-500"
+    },
+    {
+      "title": "Total Product Quantity",
+      "value": 127,
+      "icon": "📊",
+      "color": "bg-purple-500"
+    }
+  ],
+  "recentActivity": [
+    {
+      "id": 1,
+      "icon": "📦",
+      "iconColor": "bg-blue-100",
+      "iconTextColor": "text-blue-500",
+      "title": "New product added",
+      "description": "Laptop - 2 hours ago"
+    },
+    {
+      "id": 2,
+      "icon": "👤",
+      "iconColor": "bg-green-100",
+      "iconTextColor": "text-green-500",
+      "title": "New employee joined",
+      "description": "John Doe - 1 day ago"
+    },
+    {
+      "id": 3,
+      "icon": "💰",
+      "iconColor": "bg-yellow-100",
+      "iconTextColor": "text-yellow-500",
+      "title": "Salaries processed",
+      "description": "For September - 3 days ago"
+    }
+  ]
+}

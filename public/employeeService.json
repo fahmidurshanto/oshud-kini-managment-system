@@ -1,0 +1,68 @@
+{
+  "employees": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john.doe@company.com",
+      "jobTitle": "Software Engineer",
+      "salary": 75000,
+      "status": "Active"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane.smith@company.com",
+      "jobTitle": "Product Manager",
+      "salary": 85000,
+      "status": "Active"
+    },
+    {
+      "id": 3,
+      "name": "Robert Johnson",
+      "email": "robert.j@company.com",
+      "jobTitle": "Designer",
+      "salary": 65000,
+      "status": "Inactive"
+    },
+    {
+      "id": 4,
+      "name": "Emily Davis",
+      "email": "emily.d@company.com",
+      "jobTitle": "HR Specialist",
+      "salary": 60000,
+      "status": "Active"
+    },
+    {
+      "id": 5,
+      "name": "Michael Wilson",
+      "email": "michael.w@company.com",
+      "jobTitle": "DevOps Engineer",
+      "salary": 80000,
+      "status": "Active"
+    },
+    {
+      "id": 6,
+      "name": "Sarah Johnson",
+      "email": "sarah.j@company.com",
+      "jobTitle": "Marketing Manager",
+      "salary": 70000,
+      "status": "Active"
+    },
+    {
+      "id": 7,
+      "name": "David Brown",
+      "email": "david.b@company.com",
+      "jobTitle": "Accountant",
+      "salary": 65000,
+      "status": "Active"
+    },
+    {
+      "id": 8,
+      "name": "Lisa Miller",
+      "email": "lisa.m@company.com",
+      "jobTitle": "QA Engineer",
+      "salary": 70000,
+      "status": "Active"
+    }
+  ]
+}

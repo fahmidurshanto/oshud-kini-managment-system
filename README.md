@@ -45,6 +45,25 @@ Builds the app for production to the `dist` folder.
 
 Preview the production build locally.
 
+## Deployment
+
+### Vercel Deployment
+
+This project includes a `vercel.json` file for proper deployment to Vercel:
+
+1. Push your code to a GitHub repository
+2. Sign up or log in to [Vercel](https://vercel.com)
+3. Create a new project and import your repository
+4. Vercel will automatically detect the Vite project and configure it
+5. Add your Firebase environment variables in the Vercel project settings:
+   - Go to your project settings → Environment Variables
+   - Add all your `VITE_FIREBASE_*` variables
+6. Deploy the project
+
+The `vercel.json` configuration handles:
+- SPA routing with rewrites to `index.html`
+- Security headers for enhanced protection
+
 ## Project Structure
 
 ```

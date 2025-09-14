@@ -114,8 +114,8 @@ const SaleInvoice = ({ sale }) => {
           />
           <View style={styles.companyInfo}>
             <Text>Oshud Kini Management System</Text>
-            <Text>Email: info@oshudkini.com</Text>
-            <Text>Phone: +880 XXX XXX XXXX</Text>
+            <Text>Email: fahmidurrahamanshanto@gmail.com</Text>
+            <Text>Phone: +8801640301028</Text>
           </View>
         </View>
 

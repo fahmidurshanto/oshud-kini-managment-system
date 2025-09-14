@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import SaleInvoice from '../components/SaleInvoice';
 import * as salesService from '../services/salesService';
@@ -7,6 +7,7 @@ const SalesList = () => {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch sales on component mount
   useEffect(() => {
@@ -26,6 +27,25 @@ const SalesList = () => {
       setLoading(false);
     }
   };
+
+  // Filter sales based on search term
+  const filteredSales = useMemo(() => {
+    if (!searchTerm) return sales;
+    
+    const term = searchTerm.toLowerCase();
+    return sales.filter(sale => {
+      // Search by sale ID
+      if (sale._id.toLowerCase().includes(term)) return true;
+      
+      // Search by customer name
+      if (sale.customerName.toLowerCase().includes(term)) return true;
+      
+      // Search by product names
+      return sale.items.some(item => 
+        item.productName.toLowerCase().includes(term)
+      );
+    });
+  }, [sales, searchTerm]);
 
   // Delete a sale
   const handleDeleteSale = async (saleId) => {
@@ -88,10 +108,38 @@ const SalesList = () => {
         <h1 className="text-2xl font-bold text-gray-800">Sales List</h1>
       </div>
 
+      {/* Search Field */}
+      <div className="mb-6">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search by ID, customer name, or product name..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button
+              className="absolute right-3 top-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setSearchTerm('')}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        {searchTerm && (
+          <p className="mt-2 text-sm text-gray-600">
+            Showing {filteredSales.length} of {sales.length} sales
+          </p>
+        )}
+      </div>
+
       <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
-        {sales.length === 0 ? (
+        {filteredSales.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">No sales records found</p>
+            <p className="text-gray-500">
+              {searchTerm ? 'No sales match your search criteria' : 'No sales records found'}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -119,7 +167,7 @@ const SalesList = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sales.map((sale) => (
+                {filteredSales.map((sale) => (
                   <tr key={sale._id}>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 font-medium">

@@ -133,8 +133,8 @@ const SaleInvoice = ({ sale }) => {
         {/* Items table */}
         <View style={styles.table}>
           <View style={styles.tableRow}>
-            <Text style={styles.tableColHeader}>Total (৳)</Text>
-            <Text style={styles.tableColHeader}>Price (৳)</Text>
+            <Text style={styles.tableColHeader}>Total (Taka)</Text>
+            <Text style={styles.tableColHeader}>Price (Taka)</Text>
             <Text style={styles.tableColHeader}>Quantity</Text>
             <Text style={styles.tableColHeader}>Product</Text>
           </View>
@@ -151,12 +151,12 @@ const SaleInvoice = ({ sale }) => {
         {/* Summary */}
         <View style={styles.summaryRow}>
           <View style={styles.summaryCol}>
-            <Text style={styles.summaryValue}>Subtotal: ৳{subtotal.toLocaleString()}</Text>
+            <Text style={styles.summaryValue}>Subtotal: Taka{subtotal.toLocaleString()}</Text>
             {discount > 0 && (
-              <Text style={styles.summaryValue}>Discount: ৳{discount.toLocaleString()}</Text>
+              <Text style={styles.summaryValue}>Discount: Taka{discount.toLocaleString()}</Text>
             )}
             <Text style={[styles.summaryValue, { fontWeight: 'bold' }]}>
-              Total: ৳{finalAmount.toLocaleString()}
+              Total: Taka{finalAmount.toLocaleString()}
             </Text>
           </View>
         </View>

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { AuthContext } from './contexts/AuthContext';
 import { auth } from './firebase.config';
 import { 
   createUserWithEmailAndPassword, 
@@ -7,9 +6,9 @@ import {
   signOut, 
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
-  updateProfile
+  signInWithPopup
 } from 'firebase/auth';
+import { AuthContext } from './contexts/AuthContext';
 
 // Auth Provider Component
 const AuthProvider = ({ children }) => {
@@ -18,44 +17,76 @@ const AuthProvider = ({ children }) => {
 
   // Register a new user with email and password
   const register = async (email, password, name) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    // Update the user's profile with their name
-    await updateProfile(userCredential.user, {
-      displayName: name
-    });
-    setCurrentUser({ ...userCredential.user, displayName: name });
-    return userCredential;
+    try {
+      console.log('Registering user with email:', email);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Update the user's display name
+      await userCredential.user.updateProfile({
+        displayName: name
+      });
+      setCurrentUser({
+        ...userCredential.user,
+        name: name
+      });
+      console.log('User registered successfully:', userCredential.user.uid);
+      return userCredential.user;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw new Error(error.message || 'Failed to register');
+    }
   };
 
   // Login with email and password
   const login = async (email, password) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    setCurrentUser(userCredential.user);
-    return userCredential;
+    try {
+      console.log('Logging in user with email:', email);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('User logged in successfully:', userCredential.user.uid);
+      setCurrentUser(userCredential.user);
+      return userCredential.user;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw new Error(error.message || 'Failed to login');
+    }
   };
 
-  // Login with Google
+  // Google Sign-In
   const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    setCurrentUser(result.user);
-    return result;
+    try {
+      console.log('Logging in with Google');
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      console.log('Google sign in successful:', result.user.uid);
+      setCurrentUser(result.user);
+      return result.user;
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      throw new Error(error.message || 'Failed to sign in with Google');
+    }
   };
 
   // Logout
   const logout = async () => {
-    await signOut(auth);
-    setCurrentUser(null);
+    try {
+      console.log('Logging out user');
+      await signOut(auth);
+      setCurrentUser(null);
+      console.log('User logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw new Error(error.message || 'Failed to logout');
+    }
   };
 
   // Subscribe to user state changes
   useEffect(() => {
+    console.log('Setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('Auth state changed. User:', user ? user.uid : 'null');
       setCurrentUser(user);
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return unsubscribe;
   }, []);
 
@@ -68,9 +99,18 @@ const AuthProvider = ({ children }) => {
     logout
   };
 
+  console.log('AuthProvider rendering. Loading:', loading, 'CurrentUser:', currentUser ? currentUser.uid : 'null');
+
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {/* Show loading state until auth state is determined */}
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

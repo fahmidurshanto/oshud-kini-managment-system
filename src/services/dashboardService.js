@@ -1,47 +1,38 @@
-// Function to fetch dashboard data from the JSON file
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://oshud-kini-management-server.onrender.com/api';
+
+// Create an axios instance with default configuration
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Function to fetch dashboard data from backend API (without authentication)
 export const getDashboardData = async () => {
   try {
-    const response = await fetch('/dashboardService.json');
-    if (!response.ok) {
-      throw new Error('Failed to fetch dashboard data');
-    }
-    const data = await response.json();
-    return data;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const response = await apiClient.get('/dashboard');
+    
+    console.log('Successfully fetched dashboard data');
+    return response.data;
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-    throw error;
+    console.error('Error fetching dashboard data:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch dashboard data');
   }
 };
 
-// Function to get dashboard statistics
+// Function to fetch dashboard stats (for backward compatibility)
 export const getDashboardStats = async () => {
   try {
-    const data = await getDashboardData();
-    return data.stats;
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    throw error;
-  }
-};
-
-// Function to get recent activity
-export const getRecentActivity = async () => {
-  try {
-    const data = await getDashboardData();
-    return data.recentActivity;
-  } catch (error) {
-    console.error('Error fetching recent activity:', error);
-    throw error;
-  }
-};
-
-// Function to get all dashboard data with updated statistics
-export const getDashboardDataWithStats = async () => {
-  try {
     const dashboardData = await getDashboardData();
-    return dashboardData;
+    return dashboardData.stats;
   } catch (error) {
-    console.error('Error fetching dashboard data with stats:', error);
-    throw error;
+    console.error('Error fetching dashboard stats:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch dashboard stats');
   }
 };

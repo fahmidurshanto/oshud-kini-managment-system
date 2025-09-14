@@ -19,11 +19,14 @@ const ProductList = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      // Add a small delay to ensure auth state is initialized
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const data = await productService.getProducts();
       setProducts(data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch products');
+      setError('Failed to fetch products: ' + err.message);
       console.error('Error fetching products:', err);
     } finally {
       setLoading(false);
@@ -38,12 +41,13 @@ const ProductList = () => {
   const confirmDelete = async () => {
     if (productToDelete) {
       try {
-        await productService.deleteProduct(productToDelete.id);
-        setProducts(products.filter(p => p.id !== productToDelete.id));
+        // Use _id instead of id for MongoDB
+        await productService.deleteProduct(productToDelete._id);
+        setProducts(products.filter(p => p._id !== productToDelete._id));
         setShowDeleteModal(false);
         setProductToDelete(null);
       } catch (err) {
-        setError('Failed to delete product');
+        setError('Failed to delete product: ' + err.message);
         console.error('Error deleting product:', err);
       }
     }
@@ -129,7 +133,7 @@ const ProductList = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {products.map((product) => (
-                <tr key={product.id}>
+                <tr key={product._id}>
                   <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{product.name}</div>
                   </td>
@@ -147,7 +151,8 @@ const ProductList = () => {
                   </td>
                   <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
-                      onClick={() => handleEdit(product.id)}
+                      // Use _id instead of id for MongoDB
+                      onClick={() => handleEdit(product._id)}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
                       <FaEdit />

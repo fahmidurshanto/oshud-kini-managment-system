@@ -18,7 +18,15 @@ const ProcessSalary = () => {
     try {
       setLoading(true);
       const data = await salaryService.getCurrentMonthEmployees();
-      setEmployees(data);
+      // Initialize bonuses and deductions to 0 for each employee
+      // Also ensure salary is a valid number
+      const employeesWithAdjustments = data.map(emp => ({
+        ...emp,
+        salary: !isNaN(parseFloat(emp.salary)) ? parseFloat(emp.salary) : 0,
+        bonuses: !isNaN(parseFloat(emp.bonuses)) ? parseFloat(emp.bonuses) : 0,
+        deductions: !isNaN(parseFloat(emp.deductions)) ? parseFloat(emp.deductions) : 0
+      }));
+      setEmployees(employeesWithAdjustments);
       setError(null);
     } catch (err) {
       setError('Failed to fetch employees');
@@ -30,7 +38,15 @@ const ProcessSalary = () => {
 
   // Calculate monthly salary from annual
   const calculateMonthlySalary = (annualSalary) => {
-    return Math.round(annualSalary / 12);
+    // Ensure we have a valid number
+    const salary = !isNaN(parseFloat(annualSalary)) ? parseFloat(annualSalary) : 0;
+    // If salary is invalid or negative, return 0
+    if (salary <= 0) {
+      return 0;
+    }
+    // Calculate monthly salary and ensure it's a valid number
+    const monthly = Math.round(salary / 12);
+    return !isNaN(monthly) ? monthly : 0;
   };
 
   // Format month for display
@@ -44,14 +60,23 @@ const ProcessSalary = () => {
       // Prepare salary data for processing
       const salaryData = {
         month: formatMonth(selectedMonth),
-        employees: employees.map(emp => ({
-          id: emp.id,
-          name: emp.name,
-          basicSalary: emp.basicSalary,
-          bonuses: emp.bonuses || 0,
-          deductions: emp.deductions || 0
-        })),
-        processedDate: new Date().toISOString().split('T')[0]
+        // Change 'employees' to 'salaries' to match backend expectations
+        salaries: employees.map(emp => {
+          // Ensure all values are valid numbers
+          const empSalary = !isNaN(parseFloat(emp.salary)) ? parseFloat(emp.salary) : 0;
+          const empBonuses = !isNaN(parseFloat(emp.bonuses)) ? parseFloat(emp.bonuses) : 0;
+          const empDeductions = !isNaN(parseFloat(emp.deductions)) ? parseFloat(emp.deductions) : 0;
+          
+          // Calculate the final amount for each employee
+          const monthlySalary = calculateMonthlySalary(empSalary);
+          const finalAmount = monthlySalary + empBonuses - empDeductions;
+          
+          return {
+            id: emp._id,
+            name: emp.name,
+            amount: !isNaN(finalAmount) ? finalAmount : 0
+          };
+        })
       };
       
       await salaryService.processSalaries(salaryData);
@@ -63,9 +88,24 @@ const ProcessSalary = () => {
     }
   };
 
-  const handleAddAdjustment = (employeeId) => {
-    // In a real app, this would open an adjustment form
-    console.log('Adding adjustment for employee:', employeeId);
+  // Handle adding bonuses or deductions
+  const handleAddAdjustment = (employeeId, type, amount) => {
+    const adjustmentAmount = !isNaN(parseFloat(amount)) ? parseFloat(amount) : 0;
+    // Only proceed if we have a valid amount
+    if (adjustmentAmount <= 0) return;
+    
+    setEmployees(employees.map(emp => {
+      if (emp._id === employeeId) {
+        if (type === 'bonus') {
+          const newBonuses = (!isNaN(parseFloat(emp.bonuses)) ? parseFloat(emp.bonuses) : 0) + adjustmentAmount;
+          return { ...emp, bonuses: newBonuses };
+        } else if (type === 'deduction') {
+          const newDeductions = (!isNaN(parseFloat(emp.deductions)) ? parseFloat(emp.deductions) : 0) + adjustmentAmount;
+          return { ...emp, deductions: newDeductions };
+        }
+      }
+      return emp;
+    }));
   };
 
   if (loading) {
@@ -155,13 +195,26 @@ const ProcessSalary = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {employees.map((employee) => {
-                const monthlySalary = calculateMonthlySalary(employee.basicSalary);
-                const bonuses = employee.bonuses || 0;
-                const deductions = employee.deductions || 0;
-                const finalSalary = monthlySalary + bonuses - deductions;
+                // Ensure all values are valid numbers
+                const empSalary = !isNaN(parseFloat(employee.salary)) ? parseFloat(employee.salary) : 0;
+                const empBonuses = !isNaN(parseFloat(employee.bonuses)) ? parseFloat(employee.bonuses) : 0;
+                const empDeductions = !isNaN(parseFloat(employee.deductions)) ? parseFloat(employee.deductions) : 0;
+                
+                // Calculate monthly salary
+                const monthlySalary = calculateMonthlySalary(empSalary);
+                const finalSalary = monthlySalary + empBonuses - empDeductions;
+                
+                // Format currency values
+                const formatCurrency = (amount) => {
+                  const num = !isNaN(parseFloat(amount)) ? parseFloat(amount) : 0;
+                  return Math.abs(num).toLocaleString('en-US', { 
+                    minimumFractionDigits: 0, 
+                    maximumFractionDigits: 0 
+                  });
+                };
                 
                 return (
-                  <tr key={employee.id}>
+                  <tr key={employee._id}>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{employee.name}</div>
                       <div className="text-sm text-gray-500 md:hidden">{employee.jobTitle}</div>
@@ -170,24 +223,32 @@ const ProcessSalary = () => {
                       <div className="text-sm text-gray-900">{employee.jobTitle}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">৳{monthlySalary.toLocaleString()}</div>
+                      <div className="text-sm text-gray-900">৳{formatCurrency(monthlySalary)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                      <div className="text-sm text-green-600">+৳{bonuses.toLocaleString()}</div>
+                      <div className="text-sm text-green-600">+৳{formatCurrency(empBonuses)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                      <div className="text-sm text-red-600">-৳{deductions.toLocaleString()}</div>
+                      <div className="text-sm text-red-600">-৳{formatCurrency(empDeductions)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">৳{finalSalary.toLocaleString()}</div>
+                      <div className="text-sm font-medium text-gray-900">৳{formatCurrency(finalSalary)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button 
-                        onClick={() => handleAddAdjustment(employee.id)}
-                        className="text-blue-600 hover:text-blue-900 text-sm"
-                      >
-                        Add Adjustment
-                      </button>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="number"
+                          placeholder="Bonus"
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                          onBlur={(e) => handleAddAdjustment(employee._id, 'bonus', e.target.value)}
+                        />
+                        <input
+                          type="number"
+                          placeholder="Deduction"
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                          onBlur={(e) => handleAddAdjustment(employee._id, 'deduction', e.target.value)}
+                        />
+                      </div>
                     </td>
                   </tr>
                 );

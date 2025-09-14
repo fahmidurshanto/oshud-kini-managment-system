@@ -1,130 +1,124 @@
-// Function to fetch employees from the JSON file
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://oshud-kini-management-server.onrender.com/api';
+
+// Create an axios instance with default configuration
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Function to fetch employees from backend API (without authentication)
 export const getEmployees = async () => {
   try {
-    const response = await fetch('/employeeService.json');
-    if (!response.ok) {
-      throw new Error('Failed to fetch employees');
-    }
-    const data = await response.json();
-    return data.employees;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.get('/employees');
+    
+    console.log('Successfully fetched employees');
+    // Extract the employees array from the response data
+    return response.data.employees || [];
   } catch (error) {
-    console.error('Error fetching employees:', error);
-    throw error;
+    console.error('Error fetching employees:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch employees');
   }
 };
 
-// Function to get a single employee by ID
+// Function to fetch a single employee by ID from backend API (without authentication)
 export const getEmployeeById = async (id) => {
   try {
-    const employees = await getEmployees();
-    const employee = employees.find(e => e.id === parseInt(id));
-    if (!employee) {
-      throw new Error('Employee not found');
-    }
-    return employee;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const response = await apiClient.get(`/employees/${id}`);
+    
+    console.log('Successfully fetched employee');
+    return response.data;
   } catch (error) {
-    console.error(`Error fetching employee with id ${id}:`, error);
-    throw error;
+    console.error(`Error fetching employee with id ${id}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to fetch employee with id ${id}`);
   }
 };
 
-// Function to create a new employee
+// Function to create a new employee using backend API (without authentication)
 export const createEmployee = async (employeeData) => {
   try {
-    // In a real app, this would make a POST request to the server
-    // For now, we'll simulate the creation by fetching existing employees
-    // and returning the new employee with an incremented ID
-    const employees = await getEmployees();
-    const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id)) + 1 : 1;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    const newEmployee = {
-      id: newId,
-      ...employeeData
-    };
+    const response = await apiClient.post('/employees', employeeData);
     
-    // Note: In a real implementation, this would persist the data to the server
-    // For this demo, we're just simulating the creation
-    console.log('Creating employee:', newEmployee);
-    return newEmployee;
+    console.log('Successfully created employee');
+    return response.data;
   } catch (error) {
-    console.error('Error creating employee:', error);
-    throw error;
+    console.error('Error creating employee:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to create employee');
   }
 };
 
-// Function to update an existing employee
+// Function to update an existing employee using backend API (without authentication)
 export const updateEmployee = async (id, employeeData) => {
   try {
-    // In a real app, this would make a PUT request to the server
-    // For now, we'll simulate the update
-    console.log(`Updating employee with id ${id}:`, employeeData);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Return the updated employee data
-    const updatedEmployee = {
-      id: parseInt(id),
-      ...employeeData
-    };
+    const response = await apiClient.put(`/employees/${id}`, employeeData);
     
-    return updatedEmployee;
+    console.log('Successfully updated employee');
+    return response.data;
   } catch (error) {
-    console.error(`Error updating employee with id ${id}:`, error);
-    throw error;
+    console.error(`Error updating employee with id ${id}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to update employee with id ${id}`);
   }
 };
 
-// Function to deactivate an employee
-export const deactivateEmployee = async (id) => {
-  try {
-    // In a real app, this would make a PUT request to update the employee status
-    // For now, we'll simulate the deactivation
-    console.log(`Deactivating employee with id ${id}`);
-    return id;
-  } catch (error) {
-    console.error(`Error deactivating employee with id ${id}:`, error);
-    throw error;
-  }
-};
-
-// Function to activate an employee
-export const activateEmployee = async (id) => {
-  try {
-    // In a real app, this would make a PUT request to update the employee status
-    // For now, we'll simulate the activation
-    console.log(`Activating employee with id ${id}`);
-    return id;
-  } catch (error) {
-    console.error(`Error activating employee with id ${id}:`, error);
-    throw error;
-  }
-};
-
-// Function to delete an employee
+// Function to delete an employee using backend API (without authentication)
 export const deleteEmployee = async (id) => {
   try {
-    // In a real app, this would make a DELETE request to the server
-    // For now, we'll simulate the deletion
-    console.log(`Deleting employee with id ${id}`);
-    return id;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.delete(`/employees/${id}`);
+    
+    console.log('Successfully deleted employee');
+    return response.data;
   } catch (error) {
-    console.error(`Error deleting employee with id ${id}:`, error);
-    throw error;
+    console.error(`Error deleting employee with id ${id}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to delete employee with id ${id}`);
   }
 };
 
-// Function to get employee statistics
-export const getEmployeeStats = async () => {
+// Function to activate an employee using backend API (without authentication)
+export const activateEmployee = async (id) => {
   try {
-    const employees = await getEmployees();
-    const activeEmployees = employees.filter(e => e.status === 'Active').length;
-    const inactiveEmployees = employees.filter(e => e.status === 'Inactive').length;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    return {
-      total: employees.length,
-      active: activeEmployees,
-      inactive: inactiveEmployees
-    };
+    const response = await apiClient.put(`/employees/${id}/activate`);
+    
+    console.log('Successfully activated employee');
+    return response.data;
   } catch (error) {
-    console.error('Error fetching employee statistics:', error);
-    throw error;
+    console.error(`Error activating employee with id ${id}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to activate employee with id ${id}`);
+  }
+};
+
+// Function to deactivate an employee using backend API (without authentication)
+export const deactivateEmployee = async (id) => {
+  try {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.put(`/employees/${id}/deactivate`);
+    
+    console.log('Successfully deactivated employee');
+    return response.data;
+  } catch (error) {
+    console.error(`Error deactivating employee with id ${id}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to deactivate employee with id ${id}`);
   }
 };

@@ -1,130 +1,158 @@
-// Function to fetch salary data from the JSON file
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://oshud-kini-management-server.onrender.com/api';
+
+// Create an axios instance with default configuration
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Function to fetch salary data from backend API (without authentication)
 export const getSalaryData = async () => {
   try {
-    const response = await fetch('/salaryService.json');
-    if (!response.ok) {
-      throw new Error('Failed to fetch salary data');
-    }
-    const data = await response.json();
-    return data;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.get('/salaries');
+    
+    console.log('Successfully fetched salary data');
+    // Extract the salaries array from the response data
+    return response.data.salaries || [];
   } catch (error) {
-    console.error('Error fetching salary data:', error);
-    throw error;
+    console.error('Error fetching salary data:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch salary data');
   }
 };
 
-// Function to get salary history
+// Function to get salary history from backend API (without authentication)
 export const getSalaryHistory = async () => {
   try {
-    const data = await getSalaryData();
-    return data.salaries;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.get('/salaries/history');
+    
+    console.log('Successfully fetched salary history');
+    // Extract the salaries array from the response data
+    return response.data.salaries || [];
   } catch (error) {
-    console.error('Error fetching salary history:', error);
-    throw error;
+    console.error('Error fetching salary history:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch salary history');
   }
 };
 
-// Function to get current month employees for salary processing
+// Function to get current month employees for salary processing from backend API (without authentication)
 export const getCurrentMonthEmployees = async () => {
   try {
-    const data = await getSalaryData();
-    return data.currentMonthEmployees;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.get('/salaries/current-month');
+    
+    console.log('Successfully fetched current month employees');
+    // Extract the employees array from the response data
+    return response.data.employees || [];
   } catch (error) {
-    console.error('Error fetching current month employees:', error);
-    throw error;
+    console.error('Error fetching current month employees:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch current month employees');
   }
 };
 
-// Function to process salaries
+// Function to process salaries using backend API (without authentication)
 export const processSalaries = async (salaryData) => {
   try {
-    // In a real app, this would make a POST request to the server
-    // For now, we'll simulate the processing
-    console.log('Processing salaries:', salaryData);
-    return salaryData;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const response = await apiClient.post('/salaries/process', salaryData);
+    
+    console.log('Successfully processed salaries');
+    return response.data;
   } catch (error) {
-    console.error('Error processing salaries:', error);
-    throw error;
+    console.error('Error processing salaries:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to process salaries');
   }
 };
 
-// Function to add adjustment (bonus/deduction) for an employee
+// Function to add adjustment (bonus/deduction) for an employee using backend API (without authentication)
 export const addAdjustment = async (employeeId, adjustmentData) => {
   try {
-    // In a real app, this would make a POST request to the server
-    // For now, we'll simulate adding an adjustment
-    console.log(`Adding adjustment for employee ${employeeId}:`, adjustmentData);
-    return { employeeId, ...adjustmentData };
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.post(`/salaries/adjustment/${employeeId}`, adjustmentData);
+    
+    console.log(`Successfully added adjustment for employee ${employeeId}`);
+    return response.data;
   } catch (error) {
-    console.error(`Error adding adjustment for employee ${employeeId}:`, error);
-    throw error;
+    console.error(`Error adding adjustment for employee with id ${employeeId}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to add adjustment for employee with id ${employeeId}`);
   }
 };
 
-// Function to get a specific salary record by ID
+// Function to get a specific salary record by ID from backend API (without authentication)
 export const getSalaryById = async (id) => {
   try {
-    const salaries = await getSalaryHistory();
-    const salary = salaries.find(s => s.id === parseInt(id));
-    if (!salary) {
-      throw new Error('Salary record not found');
-    }
-    return salary;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const response = await apiClient.get(`/salaries/${id}`);
+    
+    console.log('Successfully fetched salary record');
+    return response.data;
   } catch (error) {
-    console.error(`Error fetching salary with id ${id}:`, error);
-    throw error;
+    console.error(`Error fetching salary record with id ${id}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to fetch salary record with id ${id}`);
   }
 };
 
-// Function to create a new salary record
+// Function to create a new salary record using backend API (without authentication)
 export const createSalaryRecord = async (salaryData) => {
   try {
-    // In a real app, this would make a POST request to the server
-    // For now, we'll simulate the creation
-    const salaries = await getSalaryHistory();
-    const newId = salaries.length > 0 ? Math.max(...salaries.map(s => s.id)) + 1 : 1;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    const newSalary = {
-      id: newId,
-      ...salaryData
-    };
+    const response = await apiClient.post('/salaries', salaryData);
     
-    console.log('Creating salary record:', newSalary);
-    return newSalary;
+    console.log('Successfully created salary record');
+    return response.data;
   } catch (error) {
-    console.error('Error creating salary record:', error);
-    throw error;
+    console.error('Error creating salary record:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to create salary record');
   }
 };
 
-// Function to update an existing salary record
+// Function to update an existing salary record using backend API (without authentication)
 export const updateSalaryRecord = async (id, salaryData) => {
   try {
-    // In a real app, this would make a PUT request to the server
-    // For now, we'll simulate the update
-    console.log(`Updating salary record with id ${id}:`, salaryData);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    const updatedSalary = {
-      id: parseInt(id),
-      ...salaryData
-    };
+    const response = await apiClient.put(`/salaries/${id}`, salaryData);
     
-    return updatedSalary;
+    console.log('Successfully updated salary record');
+    return response.data;
   } catch (error) {
-    console.error(`Error updating salary record with id ${id}:`, error);
-    throw error;
+    console.error(`Error updating salary record with id ${id}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to update salary record with id ${id}`);
   }
 };
 
-// Function to delete a salary record
+// Function to delete a salary record using backend API (without authentication)
 export const deleteSalaryRecord = async (id) => {
   try {
-    // In a real app, this would make a DELETE request to the server
-    // For now, we'll simulate the deletion
-    console.log(`Deleting salary record with id ${id}`);
-    return id;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.delete(`/salaries/${id}`);
+    
+    console.log('Successfully deleted salary record');
+    return response.data;
   } catch (error) {
-    console.error(`Error deleting salary record with id ${id}:`, error);
-    throw error;
+    console.error(`Error deleting salary record with id ${id}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to delete salary record with id ${id}`);
   }
 };

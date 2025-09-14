@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaHistory, FaEdit, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import * as salaryService from '../services/salaryService';
 
 const SalaryManagement = () => {
@@ -12,25 +13,77 @@ const SalaryManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [salaryToDelete, setSalaryToDelete] = useState(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   // Fetch data on component mount
   useEffect(() => {
-    fetchData();
-  }, []);
+    console.log('Salaries component mounted. Current user:', currentUser ? currentUser.uid : 'null');
+    if (currentUser) {
+      fetchData();
+    }
+  }, [currentUser]);
 
   const fetchData = async () => {
     try {
+      console.log('Fetching salary data. Current user:', currentUser ? currentUser.uid : 'null');
       setLoading(true);
+      
+      // Add a small delay to ensure auth state is initialized
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      console.log('About to call service functions');
       const [employeesData, historyData] = await Promise.all([
         salaryService.getCurrentMonthEmployees(),
         salaryService.getSalaryHistory()
       ]);
+      console.log('Service functions completed');
       
-      setEmployees(employeesData);
-      setSalaryHistory(historyData);
+      // Validate and sanitize employees data
+      const sanitizedEmployees = employeesData.map(emp => {
+        if (!emp || typeof emp !== 'object') {
+          return {
+            id: 'unknown',
+            name: 'Unknown Employee',
+            jobTitle: 'Unknown',
+            salary: 0,
+            bonuses: 0,
+            deductions: 0
+          };
+        }
+        
+        return {
+          ...emp,
+          salary: !isNaN(parseFloat(emp.salary)) ? parseFloat(emp.salary) : 0,
+          bonuses: !isNaN(parseFloat(emp.bonuses)) ? parseFloat(emp.bonuses) : 0,
+          deductions: !isNaN(parseFloat(emp.deductions)) ? parseFloat(emp.deductions) : 0
+        };
+      });
+      
+      // Validate and sanitize history data
+      const sanitizedHistory = historyData.map(record => {
+        if (!record || typeof record !== 'object') {
+          return {
+            id: 'unknown',
+            month: 'Unknown',
+            totalAmount: 0,
+            processedDate: 'Unknown',
+            employeeCount: 0
+          };
+        }
+        
+        return {
+          ...record,
+          totalAmount: !isNaN(parseFloat(record.totalAmount)) ? parseFloat(record.totalAmount) : 0,
+          employeeCount: !isNaN(parseInt(record.employeeCount)) ? parseInt(record.employeeCount) : 0
+        };
+      });
+      
+      setEmployees(sanitizedEmployees);
+      setSalaryHistory(sanitizedHistory);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch salary data');
+      console.error('Error in fetchData:', err);
+      setError('Failed to fetch salary data: ' + err.message);
       console.error('Error fetching salary data:', err);
     } finally {
       setLoading(false);
@@ -39,7 +92,15 @@ const SalaryManagement = () => {
 
   // Calculate monthly salary from annual
   const calculateMonthlySalary = (annualSalary) => {
-    return Math.round(annualSalary / 12);
+    // Ensure we have a valid number
+    const salary = !isNaN(parseFloat(annualSalary)) ? parseFloat(annualSalary) : 0;
+    // If salary is invalid or negative, return 0
+    if (salary <= 0) {
+      return 0;
+    }
+    // Calculate monthly salary and ensure it's a valid number
+    const monthly = Math.round(salary / 12);
+    return !isNaN(monthly) ? monthly : 0;
   };
 
   const handleProcessSalary = () => {
@@ -77,12 +138,13 @@ const SalaryManagement = () => {
   const confirmDeleteSalary = async () => {
     if (salaryToDelete) {
       try {
-        await salaryService.deleteSalaryRecord(salaryToDelete.id);
-        setSalaryHistory(salaryHistory.filter(s => s.id !== salaryToDelete.id));
+        // Use _id instead of id for MongoDB
+        await salaryService.deleteSalaryRecord(salaryToDelete._id);
+        setSalaryHistory(salaryHistory.filter(s => s._id !== salaryToDelete._id));
         setShowDeleteModal(false);
         setSalaryToDelete(null);
       } catch (err) {
-        setError('Failed to delete salary record');
+        setError('Failed to delete salary record: ' + err.message);
         console.error('Error deleting salary record:', err);
       }
     }
@@ -174,13 +236,33 @@ const SalaryManagement = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {employees.map((employee) => {
-                const monthlySalary = calculateMonthlySalary(employee.basicSalary);
-                const bonuses = employee.bonuses || 0;
-                const deductions = employee.deductions || 0;
-                const finalSalary = monthlySalary + bonuses - deductions;
+                // Ensure all values are valid numbers with comprehensive validation
+                const empSalary = !isNaN(parseFloat(employee.salary)) ? parseFloat(employee.salary) : 0;
+                const empBonuses = !isNaN(parseFloat(employee.bonuses)) ? parseFloat(employee.bonuses) : 0;
+                const empDeductions = !isNaN(parseFloat(employee.deductions)) ? parseFloat(employee.deductions) : 0;
+                
+                const monthlySalary = calculateMonthlySalary(empSalary);
+                const finalSalary = monthlySalary + empBonuses - empDeductions;
+                
+                // Format numbers properly to avoid showing NaN or empty values
+                const formatCurrency = (amount) => {
+                  // Ensure amount is a valid number
+                  const num = !isNaN(parseFloat(amount)) ? parseFloat(amount) : 0;
+                  // Format as currency without decimal places
+                  const formatted = Math.abs(num).toLocaleString('en-US', { 
+                    minimumFractionDigits: 0, 
+                    maximumFractionDigits: 0 
+                  });
+                  // Ensure we never return an empty string or NaN
+                  if (formatted === '' || isNaN(num)) {
+                    return '0';
+                  }
+                  // Add negative sign if needed
+                  return num < 0 ? `-${formatted}` : formatted;
+                };
                 
                 return (
-                  <tr key={employee.id}>
+                  <tr key={employee._id}>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{employee.name}</div>
                       <div className="text-sm text-gray-500 md:hidden">{employee.jobTitle}</div>
@@ -189,20 +271,21 @@ const SalaryManagement = () => {
                       <div className="text-sm text-gray-900">{employee.jobTitle}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">৳{monthlySalary.toLocaleString()}</div>
+                      <div className="text-sm text-gray-900">৳{formatCurrency(monthlySalary)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                      <div className="text-sm text-green-600">+৳{bonuses.toLocaleString()}</div>
+                      <div className="text-sm text-green-600">+৳{formatCurrency(empBonuses)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                      <div className="text-sm text-red-600">-৳{deductions.toLocaleString()}</div>
+                      <div className="text-sm text-red-600">-৳{formatCurrency(empDeductions)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">৳{finalSalary.toLocaleString()}</div>
+                      <div className="text-sm font-medium text-gray-900">৳{formatCurrency(finalSalary)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      {/* Use _id instead of id for MongoDB */}
                       <button 
-                        onClick={() => handleAddAdjustment(employee.id)}
+                        onClick={() => handleAddAdjustment(employee._id)}
                         className="text-blue-600 hover:text-blue-900 mr-3 text-sm"
                       >
                         Add Adjustment
@@ -259,42 +342,62 @@ const SalaryManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {salaryHistory.map((record) => (
-                <tr key={record.id}>
-                  <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{record.month}</div>
-                  </td>
-                  <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">৳{record.totalAmount.toLocaleString()}</div>
-                  </td>
-                  <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                    <div className="text-sm text-gray-900">{record.processedDate}</div>
-                  </td>
-                  <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                    <div className="text-sm text-gray-900">{record.employeeCount}</div>
-                  </td>
-                  <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
-                      onClick={() => handleViewSalary(record.id)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      View Details
-                    </button>
-                    <button 
-                      onClick={() => handleEditSalary(record.id)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteSalary(record)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {salaryHistory.map((record) => {
+                // Ensure all values are valid numbers
+                const totalAmount = !isNaN(parseFloat(record.totalAmount)) ? parseFloat(record.totalAmount) : 0;
+                const employeeCount = !isNaN(parseInt(record.employeeCount)) ? parseInt(record.employeeCount) : 0;
+                
+                // Format currency
+                const formatCurrency = (amount) => {
+                  const num = !isNaN(parseFloat(amount)) ? parseFloat(amount) : 0;
+                  const formatted = Math.abs(num).toLocaleString('en-US', { 
+                    minimumFractionDigits: 0, 
+                    maximumFractionDigits: 0 
+                  });
+                  if (formatted === '' || isNaN(num)) {
+                    return '0';
+                  }
+                  return num < 0 ? `-${formatted}` : formatted;
+                };
+                
+                return (
+                  <tr key={record._id}>
+                    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{record.month}</div>
+                    </td>
+                    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">৳{formatCurrency(totalAmount)}</div>
+                    </td>
+                    <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                      <div className="text-sm text-gray-900">{record.processedDate}</div>
+                    </td>
+                    <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                      <div className="text-sm text-gray-900">{employeeCount}</div>
+                    </td>
+                    <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      {/* Use _id instead of id for MongoDB */}
+                      <button 
+                        onClick={() => handleViewSalary(record._id)}
+                        className="text-blue-600 hover:text-blue-900 mr-3"
+                      >
+                        View Details
+                      </button>
+                      <button 
+                        onClick={() => handleEditSalary(record._id)}
+                        className="text-blue-600 hover:text-blue-900 mr-3"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteSalary(record)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

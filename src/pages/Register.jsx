@@ -34,11 +34,15 @@ const Register = () => {
     try {
       setError('');
       setLoading(true);
+      
+      // Register the user with Firebase
       await register(email, password, name);
+      
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
-      setError('Failed to create an account: ' + err.message);
+      console.error('Registration error:', err);
+      setError(err.message || 'Failed to create an account');
     }
     
     setLoading(false);

@@ -19,11 +19,14 @@ const EmployeeList = () => {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
+      // Add a small delay to ensure auth state is initialized
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const data = await employeeService.getEmployees();
       setEmployees(data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch employees');
+      setError('Failed to fetch employees: ' + err.message);
       console.error('Error fetching employees:', err);
     } finally {
       setLoading(false);
@@ -32,24 +35,26 @@ const EmployeeList = () => {
 
   const handleDeactivate = async (employee) => {
     try {
-      await employeeService.deactivateEmployee(employee.id);
+      // Use _id instead of id for MongoDB
+      await employeeService.deactivateEmployee(employee._id);
       setEmployees(employees.map(emp => 
-        emp.id === employee.id ? { ...emp, status: 'Inactive' } : emp
+        emp._id === employee._id ? { ...emp, status: 'Inactive' } : emp
       ));
     } catch (err) {
-      setError('Failed to deactivate employee');
+      setError('Failed to deactivate employee: ' + err.message);
       console.error('Error deactivating employee:', err);
     }
   };
 
   const handleActivate = async (employee) => {
     try {
-      await employeeService.activateEmployee(employee.id);
+      // Use _id instead of id for MongoDB
+      await employeeService.activateEmployee(employee._id);
       setEmployees(employees.map(emp => 
-        emp.id === employee.id ? { ...emp, status: 'Active' } : emp
+        emp._id === employee._id ? { ...emp, status: 'Active' } : emp
       ));
     } catch (err) {
-      setError('Failed to activate employee');
+      setError('Failed to activate employee: ' + err.message);
       console.error('Error activating employee:', err);
     }
   };
@@ -62,12 +67,13 @@ const EmployeeList = () => {
   const confirmDelete = async () => {
     if (employeeToDelete) {
       try {
-        await employeeService.deleteEmployee(employeeToDelete.id);
-        setEmployees(employees.filter(e => e.id !== employeeToDelete.id));
+        // Use _id instead of id for MongoDB
+        await employeeService.deleteEmployee(employeeToDelete._id);
+        setEmployees(employees.filter(e => e._id !== employeeToDelete._id));
         setShowDeleteModal(false);
         setEmployeeToDelete(null);
       } catch (err) {
-        setError('Failed to delete employee');
+        setError('Failed to delete employee: ' + err.message);
         console.error('Error deleting employee:', err);
       }
     }
@@ -153,7 +159,7 @@ const EmployeeList = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {employees.map((employee) => (
-                <tr key={employee.id}>
+                <tr key={employee._id}>
                   <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{employee.name}</div>
                     <div className="text-sm text-gray-500 md:hidden">{employee.email}</div>
@@ -178,7 +184,8 @@ const EmployeeList = () => {
                   </td>
                   <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
-                      onClick={() => handleEdit(employee.id)}
+                      // Use _id instead of id for MongoDB
+                      onClick={() => handleEdit(employee._id)}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
                       <FaEdit />

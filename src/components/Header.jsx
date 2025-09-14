@@ -16,6 +16,12 @@ const Header = ({ setSidebarOpen }) => {
     }
   };
 
+  // Get user display name for Firebase user
+  const getUserDisplayName = () => {
+    if (!currentUser) return 'Admin';
+    return currentUser.displayName || currentUser.email || 'Admin';
+  };
+
   return (
     <header className="bg-blue-600 text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -34,7 +40,7 @@ const Header = ({ setSidebarOpen }) => {
         <div className="hidden md:flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <FaUserCircle className="text-2xl" />
-            <span>{currentUser ? currentUser.displayName || currentUser.email : 'Admin'}</span>
+            <span>{getUserDisplayName()}</span>
           </div>
           <button 
             onClick={handleLogout}

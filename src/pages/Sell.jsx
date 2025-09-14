@@ -7,6 +7,7 @@ const Sell = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [cart, setCart] = useState([]);
   const [discount, setDiscount] = useState(0);
 
@@ -110,6 +111,7 @@ const Sell = () => {
       
       const saleData = {
         customerName,
+        customerPhone, // Include customer phone in sale data
         items: cart.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -122,6 +124,7 @@ const Sell = () => {
       
       // Reset form
       setCustomerName('');
+      setCustomerPhone('');
       setCart([]);
       setDiscount(0);
       
@@ -253,6 +256,20 @@ const Sell = () => {
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter customer name"
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label htmlFor="customerPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                Customer Phone
+              </label>
+              <input
+                type="text"
+                id="customerPhone"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter customer phone"
               />
             </div>
             

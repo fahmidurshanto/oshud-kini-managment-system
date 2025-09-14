@@ -125,7 +125,9 @@ const SaleInvoice = ({ sale }) => {
         {/* Customer and sale info */}
         <View style={styles.customerInfo}>
           <Text><Text style={{ fontWeight: 'bold' }}>Invoice To:</Text> {sale.customerName}</Text>
-          <Text><Text style={{ fontWeight: 'bold' }}>Customer Phone:</Text> {sale.customerPhone || 'N/A'}</Text>
+          {sale.customerPhone && (
+            <Text><Text style={{ fontWeight: 'bold' }}>Customer Phone:</Text> {sale.customerPhone}</Text>
+          )}
           <Text><Text style={{ fontWeight: 'bold' }}>Invoice Date:</Text> {new Date(sale.saleDate).toLocaleDateString()}</Text>
           <Text><Text style={{ fontWeight: 'bold' }}>Invoice No:</Text> {sale._id.substring(0, 8).toUpperCase()}</Text>
         </View>

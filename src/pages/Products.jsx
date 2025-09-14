@@ -9,11 +9,21 @@ const ProductList = () => {
   const [error, setError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const [animated, setAnimated] = useState(false);
   const navigate = useNavigate();
 
   // Fetch products on component mount
   useEffect(() => {
     fetchProducts();
+    
+    // Trigger animation after component mounts
+    const animationTimer = setTimeout(() => {
+      setAnimated(true);
+    }, 100);
+    
+    return () => {
+      clearTimeout(animationTimer);
+    };
   }, []);
 
   const fetchProducts = async () => {
@@ -64,10 +74,10 @@ const ProductList = () => {
   if (loading) {
     return (
       <div className="p-4 md:p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
           <h1 className="text-2xl font-bold text-gray-800">Product Management</h1>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className={`bg-white rounded-lg shadow-md p-6 text-center ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
           <p>Loading products...</p>
         </div>
       </div>
@@ -77,10 +87,10 @@ const ProductList = () => {
   if (error) {
     return (
       <div className="p-4 md:p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
           <h1 className="text-2xl font-bold text-gray-800">Product Management</h1>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className={`bg-white rounded-lg shadow-md p-6 text-center ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
           <p className="text-red-500">{error}</p>
           <button 
             onClick={fetchProducts}
@@ -95,18 +105,18 @@ const ProductList = () => {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
         <h1 className="text-2xl font-bold text-gray-800">Product Management</h1>
         <button 
           onClick={handleAddProduct}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center w-full sm:w-auto justify-center"
+          className={`bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center w-full sm:w-auto justify-center ${animated ? 'animate__animated animate__pulse' : ''}`}
         >
           <FaPlus className="mr-2" />
           Add Product
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className={`bg-white rounded-lg shadow-md overflow-hidden ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -132,8 +142,12 @@ const ProductList = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
-                <tr key={product._id}>
+              {products.map((product, index) => (
+                <tr 
+                  key={product._id} 
+                  className={animated ? 'animate__animated animate__fadeIn' : ''}
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
                   <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{product.name}</div>
                   </td>
@@ -174,7 +188,7 @@ const ProductList = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className={`bg-white rounded-lg p-6 w-full max-w-md ${animated ? 'animate__animated animate__zoomIn' : ''}`}>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
             <p className="text-gray-500 mb-6">
               Are you sure you want to delete "{productToDelete?.name}"? This action cannot be undone.

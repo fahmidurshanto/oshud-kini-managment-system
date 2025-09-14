@@ -14,6 +14,7 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [animated, setAnimated] = useState(false);
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -31,10 +32,16 @@ const Dashboard = () => {
     window.addEventListener('saleDeleted', handleSaleDeleted);
     window.addEventListener('saleCreated', handleSaleCreated);
     
+    // Trigger animation after component mounts
+    const animationTimer = setTimeout(() => {
+      setAnimated(true);
+    }, 100);
+    
     // Cleanup event listeners
     return () => {
       window.removeEventListener('saleDeleted', handleSaleDeleted);
       window.removeEventListener('saleCreated', handleSaleCreated);
+      clearTimeout(animationTimer);
     };
   }, []);
 
@@ -117,7 +124,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
         <PDFDownloadLink 
           document={<DashboardReport dashboardData={dashboardData} />} 
@@ -134,18 +141,22 @@ const Dashboard = () => {
       </div>
       
       {/* Add API test component for debugging */}
-      <div className="mb-6">
+      <div className={`mb-6 ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
         <ApiTest />
       </div>
       
       {/* Add Test Sales component */}
-      <div className="mb-6">
+      <div className={`mb-6 ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
         <TestSales />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 ${animated ? 'animate__animated animate__fadeIn' : ''}`}>
         {dashboardData.stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <div 
+            key={index} 
+            className={`bg-white rounded-lg shadow-md p-4 md:p-6 ${animated ? 'animate__animated animate__fadeInUp' : ''}`}
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
             <div className="flex items-center">
               <div className={`${stat.color} rounded-full p-3 text-white text-xl mr-4`}>
                 {stat.icon}
@@ -161,21 +172,28 @@ const Dashboard = () => {
 
       {/* Additional charts or data visualization */}
       {dashboardData.additionalData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 ${animated ? 'animate__animated animate__fadeIn' : ''}`}>
           {/* Product Categories Chart */}
-          <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <div className={`bg-white rounded-lg shadow-md p-4 md:p-6 ${animated ? 'animate__animated animate__fadeInLeft' : ''}`}>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Product Categories</h2>
             <div className="space-y-3">
               {dashboardData.additionalData.productCategories?.map((category, index) => (
-                <div key={index}>
+                <div 
+                  key={index}
+                  className={animated ? 'animate__animated animate__fadeInRight' : ''}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
                   <div className="flex justify-between mb-1">
                     <span className="text-sm font-medium text-gray-700">{category.name}</span>
                     <span className="text-sm font-medium text-gray-700">{category.count}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${(category.count / Math.max(...dashboardData.additionalData.productCategories.map(c => c.count))) * 100}%` }}
+                      className="bg-blue-600 h-2 rounded-full animate__animated animate__slideInLeft" 
+                      style={{ 
+                        width: `${(category.count / Math.max(...dashboardData.additionalData.productCategories.map(c => c.count))) * 100}%`,
+                        animationDelay: `${index * 0.1}s`
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -184,19 +202,26 @@ const Dashboard = () => {
           </div>
 
           {/* Employee Distribution Chart */}
-          <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <div className={`bg-white rounded-lg shadow-md p-4 md:p-6 ${animated ? 'animate__animated animate__fadeInRight' : ''}`}>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Employee Distribution</h2>
             <div className="space-y-3">
               {dashboardData.additionalData.employeeDistribution?.map((dept, index) => (
-                <div key={index}>
+                <div 
+                  key={index}
+                  className={animated ? 'animate__animated animate__fadeInLeft' : ''}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
                   <div className="flex justify-between mb-1">
                     <span className="text-sm font-medium text-gray-700">{dept.department}</span>
                     <span className="text-sm font-medium text-gray-700">{dept.count}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-green-600 h-2 rounded-full" 
-                      style={{ width: `${(dept.count / Math.max(...dashboardData.additionalData.employeeDistribution.map(d => d.count))) * 100}%` }}
+                      className="bg-green-600 h-2 rounded-full animate__animated animate__slideInRight" 
+                      style={{ 
+                        width: `${(dept.count / Math.max(...dashboardData.additionalData.employeeDistribution.map(d => d.count))) * 100}%`,
+                        animationDelay: `${index * 0.1}s`
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -206,11 +231,15 @@ const Dashboard = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+      <div className={`bg-white rounded-lg shadow-md p-4 md:p-6 ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
         <div className="space-y-4">
-          {dashboardData.recentActivity.map((activity) => (
-            <div key={activity.id} className="flex items-center border-b pb-3 last:border-b-0 last:pb-0">
+          {dashboardData.recentActivity.map((activity, index) => (
+            <div 
+              key={activity.id} 
+              className={`flex items-center border-b pb-3 last:border-b-0 last:pb-0 ${animated ? 'animate__animated animate__fadeIn' : ''}`}
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <div className={`${activity.iconColor} rounded-full p-2 mr-3`}>
                 <span className={activity.iconTextColor}>
                   {renderActivityIcon(activity)}

@@ -10,10 +10,20 @@ const Sell = () => {
   const [customerPhone, setCustomerPhone] = useState('');
   const [cart, setCart] = useState([]);
   const [discount, setDiscount] = useState(0);
+  const [animated, setAnimated] = useState(false);
 
   // Fetch products on component mount
   useEffect(() => {
     fetchProducts();
+    
+    // Trigger animation after component mounts
+    const animationTimer = setTimeout(() => {
+      setAnimated(true);
+    }, 100);
+    
+    return () => {
+      clearTimeout(animationTimer);
+    };
   }, []);
 
   const fetchProducts = async () => {
@@ -147,10 +157,10 @@ const Sell = () => {
   if (loading) {
     return (
       <div className="p-4 md:p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
           <h1 className="text-2xl font-bold text-gray-800">Sell Products</h1>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className={`bg-white rounded-lg shadow-md p-6 text-center ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
           <p>Loading products...</p>
         </div>
       </div>
@@ -160,10 +170,10 @@ const Sell = () => {
   if (error) {
     return (
       <div className="p-4 md:p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
           <h1 className="text-2xl font-bold text-gray-800">Sell Products</h1>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className={`bg-white rounded-lg shadow-md p-6 text-center ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
           <p className="text-red-500">{error}</p>
           <button 
             onClick={fetchProducts}
@@ -178,7 +188,7 @@ const Sell = () => {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
         <h1 className="text-2xl font-bold text-gray-800">Sell Products</h1>
         <a 
           href="/sales" 
@@ -190,7 +200,7 @@ const Sell = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Products List */}
-        <div className="lg:col-span-2">
+        <div className={`lg:col-span-2 ${animated ? 'animate__animated animate__fadeInLeft' : ''}`}>
           <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Available Products</h2>
             
@@ -213,8 +223,12 @@ const Sell = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {products.filter(product => product.quantity > 0).map((product) => (
-                    <tr key={product._id}>
+                  {products.filter(product => product.quantity > 0).map((product, index) => (
+                    <tr 
+                      key={product._id} 
+                      className={animated ? 'animate__animated animate__fadeIn' : ''}
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
                       <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{product.name}</div>
                       </td>
@@ -241,7 +255,7 @@ const Sell = () => {
         </div>
 
         {/* Cart */}
-        <div className="lg:col-span-1">
+        <div className={`lg:col-span-1 ${animated ? 'animate__animated animate__fadeInRight' : ''}`}>
           <div className="bg-white rounded-lg shadow-md p-4 md:p-6 sticky top-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Shopping Cart</h2>
             
@@ -290,8 +304,12 @@ const Sell = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {cart.map((item) => (
-                      <tr key={item.productId} className="border-b">
+                    {cart.map((item, index) => (
+                      <tr 
+                        key={item.productId} 
+                        className={`border-b ${animated ? 'animate__animated animate__fadeIn' : ''}`}
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
                         <td className="px-4 py-2 text-sm">
                           <div className="font-medium">{item.productName}</div>
                         </td>
@@ -373,7 +391,7 @@ const Sell = () => {
                   cart.length === 0 || !customerName.trim()
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-green-600 hover:bg-green-700 text-white'
-                }`}
+                } ${animated ? 'animate__animated animate__pulse' : ''}`}
               >
                 Process Sale
               </button>

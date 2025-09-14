@@ -8,10 +8,20 @@ const SalesList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [animated, setAnimated] = useState(false);
 
   // Fetch sales on component mount
   useEffect(() => {
     fetchSales();
+    
+    // Trigger animation after component mounts
+    const animationTimer = setTimeout(() => {
+      setAnimated(true);
+    }, 100);
+    
+    return () => {
+      clearTimeout(animationTimer);
+    };
   }, []);
 
   const fetchSales = async () => {
@@ -73,10 +83,10 @@ const SalesList = () => {
   if (loading) {
     return (
       <div className="p-4 md:p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
           <h1 className="text-2xl font-bold text-gray-800">Sales List</h1>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className={`bg-white rounded-lg shadow-md p-6 text-center ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
           <p>Loading sales...</p>
         </div>
       </div>
@@ -86,10 +96,10 @@ const SalesList = () => {
   if (error) {
     return (
       <div className="p-4 md:p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
           <h1 className="text-2xl font-bold text-gray-800">Sales List</h1>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className={`bg-white rounded-lg shadow-md p-6 ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
           <p className="text-red-500">{error}</p>
           <button 
             onClick={fetchSales}
@@ -104,12 +114,12 @@ const SalesList = () => {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className={`flex justify-between items-center mb-6 ${animated ? 'animate__animated animate__fadeInDown' : ''}`}>
         <h1 className="text-2xl font-bold text-gray-800">Sales List</h1>
       </div>
 
       {/* Search Field */}
-      <div className="mb-6">
+      <div className={`mb-6 ${animated ? 'animate__animated animate__fadeIn' : ''}`}>
         <div className="relative">
           <input
             type="text"
@@ -134,7 +144,7 @@ const SalesList = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+      <div className={`bg-white rounded-lg shadow-md p-4 md:p-6 ${animated ? 'animate__animated animate__fadeInUp' : ''}`}>
         {filteredSales.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">
@@ -167,8 +177,12 @@ const SalesList = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredSales.map((sale) => (
-                  <tr key={sale._id}>
+                {filteredSales.map((sale, index) => (
+                  <tr 
+                    key={sale._id} 
+                    className={animated ? 'animate__animated animate__fadeIn' : ''}
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 font-medium">
                         {sale._id.substring(0, 8).toUpperCase()}
@@ -187,8 +201,8 @@ const SalesList = () => {
                     <td className="px-4 md:px-6 py-4">
                       <div className="text-sm text-gray-900">
                         <ul className="list-disc pl-5">
-                          {sale.items.map((item, index) => (
-                            <li key={index}>
+                          {sale.items.map((item, itemIndex) => (
+                            <li key={itemIndex}>
                               {item.productName} - Qty: {item.quantity}, Sold Price: ৳{item.price.toLocaleString()}
                             </li>
                           ))}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -7,8 +7,20 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [animated, setAnimated] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => {
+    // Trigger animation after component mounts
+    const animationTimer = setTimeout(() => {
+      setAnimated(true);
+    }, 100);
+    
+    return () => {
+      clearTimeout(animationTimer);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,8 +39,8 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
+      <div className={`max-w-md w-full space-y-8 ${animated ? 'animate__animated animate__fadeIn' : ''}`}>
+        <div className={animated ? 'animate__animated animate__fadeInDown' : ''}>
           <div className="flex justify-center">
             <img 
               src="https://i.ibb.co.com/xtkn5SmL/Your-paragraph-text-removebg-preview.png" 
@@ -41,13 +53,13 @@ const Login = () => {
           </h2>
         </div>
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <div className={`bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative ${animated ? 'animate__animated animate__shakeX' : ''}`}>
             {error}
           </div>
         )}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className={`mt-8 space-y-6 ${animated ? 'animate__animated animate__fadeInUp' : ''}`} onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            <div>
+            <div className={animated ? 'animate__animated animate__fadeIn' : ''} style={{ animationDelay: '0.2s' }}>
               <input
                 id="email-address"
                 name="email"
@@ -60,7 +72,7 @@ const Login = () => {
                 placeholder="Email address"
               />
             </div>
-            <div>
+            <div className={animated ? 'animate__animated animate__fadeIn' : ''} style={{ animationDelay: '0.3s' }}>
               <input
                 id="password"
                 name="password"
@@ -75,7 +87,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div>
+          <div className={animated ? 'animate__animated animate__fadeIn' : ''} style={{ animationDelay: '0.4s' }}>
             <button
               type="submit"
               disabled={loading}
@@ -85,7 +97,7 @@ const Login = () => {
             </button>
           </div>
         </form>
-        <div className="text-center">
+        <div className={`text-center ${animated ? 'animate__animated animate__fadeIn' : ''}`} style={{ animationDelay: '0.5s' }}>
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
             <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">

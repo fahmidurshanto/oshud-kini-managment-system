@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   tableColHeader: {
-    width: '25%',
+    width: '50%',
     borderStyle: 'solid',
     borderWidth: 1,
     borderColor: '#000000',
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   tableCol: {
-    width: '25%',
+    width: '50%',
     borderStyle: 'solid',
     borderWidth: 1,
     borderColor: '#000000',
@@ -107,17 +107,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const DashboardReport = ({ dashboardData, products, sales, expenses }) => {
-  // Format date
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString();
-  };
-
-  // Calculate totals
-  const totalProductsValue = products.reduce((sum, product) => sum + (product.price * product.quantity || 0), 0);
-  const totalSalesValue = sales.reduce((sum, sale) => sum + (sale.finalAmount || 0), 0);
-  const totalExpensesValue = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-
+const DashboardReport = ({ dashboardData }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -152,85 +142,6 @@ const DashboardReport = ({ dashboardData, products, sales, expenses }) => {
               <View key={index} style={styles.tableRow}>
                 <Text style={styles.tableCol}>{stat.title}</Text>
                 <Text style={styles.tableCol}>{stat.value}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Products Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Products Summary</Text>
-          <View style={styles.row}>
-            <Text>Total Products: {products.length}</Text>
-            <Text>Total Quantity: {dashboardData.totalProductQuantity || 0}</Text>
-            <Text>Total Value: ৳{totalProductsValue.toLocaleString()}</Text>
-          </View>
-          
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableColHeader}>Product Name</Text>
-              <Text style={styles.tableColHeader}>Price (৳)</Text>
-              <Text style={styles.tableColHeader}>Quantity</Text>
-              <Text style={styles.tableColHeader}>Total (৳)</Text>
-            </View>
-            {products.slice(0, 10).map((product, index) => (
-              <View key={index} style={styles.tableRow}>
-                <Text style={styles.tableCol}>{product.name}</Text>
-                <Text style={styles.tableCol}>{product.price.toLocaleString()}</Text>
-                <Text style={styles.tableCol}>{product.quantity}</Text>
-                <Text style={styles.tableCol}>{(product.price * product.quantity).toLocaleString()}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Sales Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sales Summary</Text>
-          <View style={styles.row}>
-            <Text>Total Sales: {sales.length}</Text>
-            <Text>Total Revenue: ৳{totalSalesValue.toLocaleString()}</Text>
-          </View>
-          
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableColHeader}>Customer</Text>
-              <Text style={styles.tableColHeader}>Date</Text>
-              <Text style={styles.tableColHeader}>Items</Text>
-              <Text style={styles.tableColHeader}>Amount (৳)</Text>
-            </View>
-            {sales.slice(0, 10).map((sale, index) => (
-              <View key={index} style={styles.tableRow}>
-                <Text style={styles.tableCol}>{sale.customerName}</Text>
-                <Text style={styles.tableCol}>{formatDate(sale.saleDate)}</Text>
-                <Text style={styles.tableCol}>{sale.items.length}</Text>
-                <Text style={styles.tableCol}>{sale.finalAmount.toLocaleString()}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Expenses Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Expenses Summary</Text>
-          <View style={styles.row}>
-            <Text>Total Expenses: {expenses.length}</Text>
-            <Text>Total Amount: ৳{totalExpensesValue.toLocaleString()}</Text>
-          </View>
-          
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableColHeader}>Purpose</Text>
-              <Text style={styles.tableColHeader}>Date</Text>
-              <Text style={styles.tableColHeader}>Amount (৳)</Text>
-              <Text style={styles.tableColHeader}> </Text>
-            </View>
-            {expenses.slice(0, 10).map((expense, index) => (
-              <View key={index} style={styles.tableRow}>
-                <Text style={styles.tableCol}>{expense.purpose}</Text>
-                <Text style={styles.tableCol}>{formatDate(expense.expenseDate)}</Text>
-                <Text style={styles.tableCol}>{expense.amount.toLocaleString()}</Text>
-                <Text style={styles.tableCol}> </Text>
               </View>
             ))}
           </View>

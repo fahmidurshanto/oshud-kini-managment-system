@@ -12,6 +12,13 @@ const SalaryManagement = () => {
   const [currentMonth] = useState(new Date().toLocaleString('default', { month: 'long', year: 'numeric' }));
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [salaryToDelete, setSalaryToDelete] = useState(null);
+  const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [adjustmentData, setAdjustmentData] = useState({
+    type: 'bonus',
+    amount: '',
+    reason: ''
+  });
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
@@ -114,9 +121,56 @@ const SalaryManagement = () => {
     console.log('Viewing salary history');
   };
 
-  const handleAddAdjustment = (employeeId) => {
-    // In a real app, this would open an adjustment form
-    console.log('Adding adjustment for employee:', employeeId);
+  const handleAddAdjustment = (employee) => {
+    setSelectedEmployee(employee);
+    setAdjustmentData({
+      type: 'bonus',
+      amount: '',
+      reason: ''
+    });
+    setShowAdjustmentModal(true);
+  };
+
+  const handleAdjustmentChange = (e) => {
+    const { name, value } = e.target;
+    setAdjustmentData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSaveAdjustment = async () => {
+    try {
+      if (!adjustmentData.amount || !adjustmentData.reason) {
+        alert('Please fill in all fields');
+        return;
+      }
+
+      const data = {
+        type: adjustmentData.type,
+        amount: parseFloat(adjustmentData.amount),
+        reason: adjustmentData.reason
+      };
+
+      await salaryService.addAdjustment(selectedEmployee._id, data);
+      
+      // Close modal and refresh data
+      setShowAdjustmentModal(false);
+      setSelectedEmployee(null);
+      setAdjustmentData({
+        type: 'bonus',
+        amount: '',
+        reason: ''
+      });
+      
+      // Refresh the data to show updated values
+      fetchData();
+      
+      alert('Adjustment added successfully');
+    } catch (err) {
+      setError('Failed to add adjustment: ' + err.message);
+      console.error('Error adding adjustment:', err);
+    }
   };
 
   const handleAddSalary = () => {
@@ -315,7 +369,7 @@ const SalaryManagement = () => {
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {/* Use _id instead of id for MongoDB */}
                       <button 
-                        onClick={() => handleAddAdjustment(employee._id)}
+                        onClick={() => handleAddAdjustment(employee)}
                         className="text-blue-600 hover:text-blue-900 mr-3 text-sm"
                       >
                         Add Adjustment
@@ -440,6 +494,73 @@ const SalaryManagement = () => {
                 className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Adjustment Modal */}
+      {showAdjustmentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Add Adjustment for {selectedEmployee?.name}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Adjustment Type
+                </label>
+                <select
+                  name="type"
+                  value={adjustmentData.type}
+                  onChange={handleAdjustmentChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="bonus">Bonus</option>
+                  <option value="deduction">Deduction</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Amount (৳)
+                </label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={adjustmentData.amount}
+                  onChange={handleAdjustmentChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter amount"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reason
+                </label>
+                <input
+                  type="text"
+                  name="reason"
+                  value={adjustmentData.reason}
+                  onChange={handleAdjustmentChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter reason for adjustment"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowAdjustmentModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveAdjustment}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+              >
+                Save Adjustment
               </button>
             </div>
           </div>

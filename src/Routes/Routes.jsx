@@ -6,6 +6,10 @@ import DashboardPage from '../pages/Dashboard';
 import ProductList from '../pages/Products';
 import EmployeeList from '../pages/Employees';
 import SalaryManagement from '../pages/Salaries';
+import Sell from '../pages/Sell';
+import SalesList from '../pages/SalesList';
+import AddExpense from '../pages/AddExpense'; // Import AddExpense page
+import ExpensesList from '../pages/ExpensesList'; // Import ExpensesList page
 import AddProduct from '../components/AddProduct';
 import AddEmployee from '../components/AddEmployee';
 import EditProduct from '../components/EditProduct';
@@ -70,6 +74,22 @@ const routes = createBrowserRouter([
       {
         path: '/salaries/process',
         element: <ProcessSalary />
+      },
+      {
+        path: '/sell',
+        element: <Sell />
+      },
+      {
+        path: '/sales',
+        element: <SalesList />
+      },
+      {
+        path: '/expenses', // Add expenses list route
+        element: <ExpensesList />
+      },
+      {
+        path: '/expenses/add', // Add add expense route
+        element: <AddExpense />
       },
       {
         path: '/test-auth',

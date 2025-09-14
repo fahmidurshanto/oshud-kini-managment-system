@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FaTachometerAlt, FaBox, FaUsers, FaMoneyBillWave, FaSignOutAlt, FaTimes, FaUser } from 'react-icons/fa';
+import { FaTachometerAlt, FaBox, FaUsers, FaMoneyBillWave, FaSignOutAlt, FaTimes, FaUser, FaShoppingCart, FaList, FaReceipt } from 'react-icons/fa';
 import { useAuth } from '../hooks/useAuth';
 
 const Sidebar = ({ setSidebarOpen }) => {
@@ -26,6 +26,9 @@ const Sidebar = ({ setSidebarOpen }) => {
     { path: '/products', icon: <FaBox />, label: 'Products' },
     { path: '/employees', icon: <FaUsers />, label: 'Employees' },
     { path: '/salaries', icon: <FaMoneyBillWave />, label: 'Salaries' },
+    { path: '/sell', icon: <FaShoppingCart />, label: 'Sell' },
+    { path: '/sales', icon: <FaList />, label: 'Sales List' },
+    { path: '/expenses', icon: <FaReceipt />, label: 'Expenses' },
     { path: '/test-auth', icon: <FaUser />, label: 'Test Auth' },
   ];
 

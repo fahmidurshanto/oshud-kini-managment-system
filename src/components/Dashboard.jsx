@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import * as dashboardService from '../services/dashboardService';
-import { FaBox, FaUsers, FaDollarSign, FaExclamationTriangle, FaChartLine, FaShoppingCart } from 'react-icons/fa';
+import { FaBox, FaUsers, FaDollarSign, FaExclamationTriangle, FaChartLine, FaShoppingCart, FaReceipt } from 'react-icons/fa';
 import ApiTest from './ApiTest';
+import TestSales from './TestSales'; // Add missing import
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({
@@ -15,6 +16,24 @@ const Dashboard = () => {
   // Fetch dashboard data on component mount
   useEffect(() => {
     fetchData();
+    
+    // Listen for saleDeleted and saleCreated events to refresh data
+    const handleSaleDeleted = () => {
+      fetchData();
+    };
+    
+    const handleSaleCreated = () => {
+      fetchData();
+    };
+    
+    window.addEventListener('saleDeleted', handleSaleDeleted);
+    window.addEventListener('saleCreated', handleSaleCreated);
+    
+    // Cleanup event listeners
+    return () => {
+      window.removeEventListener('saleDeleted', handleSaleDeleted);
+      window.removeEventListener('saleCreated', handleSaleCreated);
+    };
   }, []);
 
   const fetchData = async () => {
@@ -54,6 +73,8 @@ const Dashboard = () => {
         return <FaChartLine />;
       case '🛒':
         return <FaShoppingCart />;
+      case '📋':
+        return <FaReceipt />;
       default:
         return <FaExclamationTriangle />;
     }
@@ -98,6 +119,11 @@ const Dashboard = () => {
       {/* Add API test component for debugging */}
       <div className="mb-6">
         <ApiTest />
+      </div>
+      
+      {/* Add Test Sales component */}
+      <div className="mb-6">
+        <TestSales />
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">

@@ -25,7 +25,8 @@ const EditSalary = () => {
     try {
       setLoading(true);
       const data = await salaryService.getSalaryById(id);
-      setSalary(data);
+      // The API returns { salary: {...} }, so we need to extract the salary object
+      setSalary(data.salary || data);
     } catch (err) {
       console.error('Error fetching salary:', err);
       setErrors({
@@ -211,7 +212,7 @@ const EditSalary = () => {
                 type="date"
                 id="processedDate"
                 name="processedDate"
-                value={salary.processedDate}
+                value={salary.processedDate ? new Date(salary.processedDate).toISOString().split('T')[0] : ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />

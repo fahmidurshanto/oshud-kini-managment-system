@@ -18,13 +18,30 @@ const ViewSalary = () => {
     try {
       setLoading(true);
       const data = await salaryService.getSalaryById(id);
-      setSalary(data);
+      // The API returns { salary: {...} }, so we need to extract the salary object
+      setSalary(data.salary || data);
     } catch (err) {
       console.error('Error fetching salary:', err);
       setError('Failed to load salary data. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    if (amount === undefined || amount === null) return '0';
+    return parseFloat(amount).toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
   };
 
   if (loading) {
@@ -76,11 +93,11 @@ const ViewSalary = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500">Total Amount</label>
-                <p className="text-lg font-medium text-gray-900">৳{salary?.totalAmount?.toLocaleString()}</p>
+                <p className="text-lg font-medium text-gray-900">৳{formatCurrency(salary?.totalAmount)}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500">Processed Date</label>
-                <p className="text-lg font-medium text-gray-900">{salary?.processedDate}</p>
+                <p className="text-lg font-medium text-gray-900">{formatDate(salary?.processedDate)}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500">Employee Count</label>
@@ -94,7 +111,7 @@ const ViewSalary = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-500">Record ID</label>
-                <p className="text-lg font-medium text-gray-900">{salary?.id}</p>
+                <p className="text-lg font-medium text-gray-900">{salary?._id}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500">Status</label>

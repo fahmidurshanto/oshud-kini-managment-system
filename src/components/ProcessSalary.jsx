@@ -7,6 +7,7 @@ const ProcessSalary = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [adjustmentInputs, setAdjustmentInputs] = useState({}); // Track input values
   const navigate = useNavigate();
 
   // Fetch employees on component mount
@@ -89,19 +90,22 @@ const ProcessSalary = () => {
   };
 
   // Handle adding bonuses or deductions
-  const handleAddAdjustment = (employeeId, type, amount) => {
-    const adjustmentAmount = !isNaN(parseFloat(amount)) ? parseFloat(amount) : 0;
-    // Only proceed if we have a valid amount
-    if (adjustmentAmount <= 0) return;
+  const handleAdjustmentChange = (employeeId, type, value) => {
+    // Update the input tracking state
+    setAdjustmentInputs(prev => ({
+      ...prev,
+      [`${employeeId}-${type}`]: value
+    }));
+    
+    // Update the employee's bonuses or deductions
+    const adjustmentAmount = value === '' ? 0 : (!isNaN(parseFloat(value)) ? parseFloat(value) : 0);
     
     setEmployees(employees.map(emp => {
       if (emp._id === employeeId) {
         if (type === 'bonus') {
-          const newBonuses = (!isNaN(parseFloat(emp.bonuses)) ? parseFloat(emp.bonuses) : 0) + adjustmentAmount;
-          return { ...emp, bonuses: newBonuses };
+          return { ...emp, bonuses: adjustmentAmount };
         } else if (type === 'deduction') {
-          const newDeductions = (!isNaN(parseFloat(emp.deductions)) ? parseFloat(emp.deductions) : 0) + adjustmentAmount;
-          return { ...emp, deductions: newDeductions };
+          return { ...emp, deductions: adjustmentAmount };
         }
       }
       return emp;
@@ -239,14 +243,16 @@ const ProcessSalary = () => {
                         <input
                           type="number"
                           placeholder="Bonus"
+                          value={adjustmentInputs[`${employee._id}-bonus`] || employee.bonuses || ''}
+                          onChange={(e) => handleAdjustmentChange(employee._id, 'bonus', e.target.value)}
                           className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                          onBlur={(e) => handleAddAdjustment(employee._id, 'bonus', e.target.value)}
                         />
                         <input
                           type="number"
                           placeholder="Deduction"
+                          value={adjustmentInputs[`${employee._id}-deduction`] || employee.deductions || ''}
+                          onChange={(e) => handleAdjustmentChange(employee._id, 'deduction', e.target.value)}
                           className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                          onBlur={(e) => handleAddAdjustment(employee._id, 'deduction', e.target.value)}
                         />
                       </div>
                     </td>

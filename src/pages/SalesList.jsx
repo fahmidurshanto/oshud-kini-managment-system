@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import SaleInvoice from '../components/SaleInvoice';
 import * as salesService from '../services/salesService';
 
 const SalesList = () => {
@@ -143,12 +145,21 @@ const SalesList = () => {
                       </div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleDeleteSale(sale._id)}
-                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex space-x-2 justify-end">
+                        <PDFDownloadLink 
+                          document={<SaleInvoice sale={sale} />} 
+                          fileName={`invoice-${sale._id.substring(0, 8)}.pdf`}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
+                        >
+                          {({ loading }) => (loading ? 'Loading...' : 'Download')}
+                        </PDFDownloadLink>
+                        <button
+                          onClick={() => handleDeleteSale(sale._id)}
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

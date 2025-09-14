@@ -99,6 +99,9 @@ const SalesList = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th scope="col" className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Date
                   </th>
                   <th scope="col" className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -118,6 +121,11 @@ const SalesList = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {sales.map((sale) => (
                   <tr key={sale._id}>
+                    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 font-medium">
+                        {sale._id.substring(0, 8).toUpperCase()}
+                      </div>
+                    </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         {new Date(sale.saleDate).toLocaleDateString()}

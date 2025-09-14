@@ -9,7 +9,7 @@ const SalaryManagement = () => {
   const [salaryHistory, setSalaryHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentMonth] = useState('October 2023');
+  const [currentMonth] = useState(new Date().toLocaleString('default', { month: 'long', year: 'numeric' }));
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [salaryToDelete, setSalaryToDelete] = useState(null);
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ const SalaryManagement = () => {
       const sanitizedEmployees = employeesData.map(emp => {
         if (!emp || typeof emp !== 'object') {
           return {
-            _id: 'unknown',  // Use _id instead of id
+            _id: 'unknown',
             name: 'Unknown Employee',
             jobTitle: 'Unknown',
             salary: 0,
@@ -63,10 +63,10 @@ const SalaryManagement = () => {
       const sanitizedHistory = historyData.map(record => {
         if (!record || typeof record !== 'object') {
           return {
-            _id: 'unknown',  // Use _id instead of id
+            _id: 'unknown',
             month: 'Unknown',
             totalAmount: 0,
-            processedDate: 'Unknown',
+            processedDate: new Date().toISOString(),
             employeeCount: 0
           };
         }
@@ -74,7 +74,8 @@ const SalaryManagement = () => {
         return {
           ...record,
           totalAmount: !isNaN(parseFloat(record.totalAmount)) ? parseFloat(record.totalAmount) : 0,
-          employeeCount: !isNaN(parseInt(record.employeeCount)) ? parseInt(record.employeeCount) : 0
+          employeeCount: !isNaN(parseInt(record.employeeCount)) ? parseInt(record.employeeCount) : 0,
+          processedDate: record.processedDate || new Date().toISOString()
         };
       });
       
@@ -150,6 +151,26 @@ const SalaryManagement = () => {
     }
   };
 
+  // Format currency
+  const formatCurrency = (amount) => {
+    const num = !isNaN(parseFloat(amount)) ? parseFloat(amount) : 0;
+    const formatted = Math.abs(num).toLocaleString('en-US', { 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 0 
+    });
+    if (formatted === '' || isNaN(num)) {
+      return '0';
+    }
+    return num < 0 ? `-${formatted}` : formatted;
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+  };
+
   if (loading) {
     return (
       <div className="p-4 md:p-6">
@@ -182,6 +203,12 @@ const SalaryManagement = () => {
     );
   }
 
+  // Calculate totals for current month
+  const totalBasicSalary = employees.reduce((sum, emp) => sum + calculateMonthlySalary(emp.salary), 0);
+  const totalBonuses = employees.reduce((sum, emp) => sum + (parseFloat(emp.bonuses) || 0), 0);
+  const totalDeductions = employees.reduce((sum, emp) => sum + (parseFloat(emp.deductions) || 0), 0);
+  const totalFinalSalary = totalBasicSalary + totalBonuses - totalDeductions;
+
   return (
     <div className="p-4 md:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -206,6 +233,26 @@ const SalaryManagement = () => {
 
       <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Process Salary for {currentMonth}</h2>
+        
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-lg p-4">
+            <p className="text-sm text-blue-800">Total Employees</p>
+            <p className="text-2xl font-bold text-blue-900">{employees.length}</p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4">
+            <p className="text-sm text-green-800">Basic Salary</p>
+            <p className="text-2xl font-bold text-green-900">৳{formatCurrency(totalBasicSalary)}</p>
+          </div>
+          <div className="bg-yellow-50 rounded-lg p-4">
+            <p className="text-sm text-yellow-800">Bonuses</p>
+            <p className="text-2xl font-bold text-yellow-900">৳{formatCurrency(totalBonuses)}</p>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-4">
+            <p className="text-sm text-purple-800">Total Payable</p>
+            <p className="text-2xl font-bold text-purple-900">৳{formatCurrency(totalFinalSalary)}</p>
+          </div>
+        </div>
         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -243,23 +290,6 @@ const SalaryManagement = () => {
                 
                 const monthlySalary = calculateMonthlySalary(empSalary);
                 const finalSalary = monthlySalary + empBonuses - empDeductions;
-                
-                // Format numbers properly to avoid showing NaN or empty values
-                const formatCurrency = (amount) => {
-                  // Ensure amount is a valid number
-                  const num = !isNaN(parseFloat(amount)) ? parseFloat(amount) : 0;
-                  // Format as currency without decimal places
-                  const formatted = Math.abs(num).toLocaleString('en-US', { 
-                    minimumFractionDigits: 0, 
-                    maximumFractionDigits: 0 
-                  });
-                  // Ensure we never return an empty string or NaN
-                  if (formatted === '' || isNaN(num)) {
-                    return '0';
-                  }
-                  // Add negative sign if needed
-                  return num < 0 ? `-${formatted}` : formatted;
-                };
                 
                 return (
                   <tr key={employee._id}>
@@ -347,19 +377,6 @@ const SalaryManagement = () => {
                 const totalAmount = !isNaN(parseFloat(record.totalAmount)) ? parseFloat(record.totalAmount) : 0;
                 const employeeCount = !isNaN(parseInt(record.employeeCount)) ? parseInt(record.employeeCount) : 0;
                 
-                // Format currency
-                const formatCurrency = (amount) => {
-                  const num = !isNaN(parseFloat(amount)) ? parseFloat(amount) : 0;
-                  const formatted = Math.abs(num).toLocaleString('en-US', { 
-                    minimumFractionDigits: 0, 
-                    maximumFractionDigits: 0 
-                  });
-                  if (formatted === '' || isNaN(num)) {
-                    return '0';
-                  }
-                  return num < 0 ? `-${formatted}` : formatted;
-                };
-                
                 return (
                   <tr key={record._id}>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap">
@@ -369,7 +386,7 @@ const SalaryManagement = () => {
                       <div className="text-sm text-gray-900">৳{formatCurrency(totalAmount)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                      <div className="text-sm text-gray-900">{record.processedDate}</div>
+                      <div className="text-sm text-gray-900">{formatDate(record.processedDate)}</div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                       <div className="text-sm text-gray-900">{employeeCount}</div>

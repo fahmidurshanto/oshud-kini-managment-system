@@ -42,7 +42,7 @@ const SalaryManagement = () => {
       const sanitizedEmployees = employeesData.map(emp => {
         if (!emp || typeof emp !== 'object') {
           return {
-            id: 'unknown',
+            _id: 'unknown',  // Use _id instead of id
             name: 'Unknown Employee',
             jobTitle: 'Unknown',
             salary: 0,
@@ -63,7 +63,7 @@ const SalaryManagement = () => {
       const sanitizedHistory = historyData.map(record => {
         if (!record || typeof record !== 'object') {
           return {
-            id: 'unknown',
+            _id: 'unknown',  // Use _id instead of id
             month: 'Unknown',
             totalAmount: 0,
             processedDate: 'Unknown',

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import * as dashboardService from '../services/dashboardService';
-import { FaBox, FaUsers, FaDollarSign, FaExclamationTriangle, FaChartLine, FaShoppingCart, FaReceipt } from 'react-icons/fa';
+import * as productService from '../services/productService';
+import * as salesService from '../services/salesService';
+import * as expenseService from '../services/expenseService';
+import DashboardReport from './DashboardReport';
+import { FaBox, FaUsers, FaDollarSign, FaExclamationTriangle, FaChartLine, FaShoppingCart, FaReceipt, FaDownload } from 'react-icons/fa';
 import ApiTest from './ApiTest';
 import TestSales from './TestSales'; // Add missing import
 
@@ -10,8 +15,14 @@ const Dashboard = () => {
     recentActivity: [],
     additionalData: {}
   });
+  const [reportData, setReportData] = useState({
+    products: [],
+    sales: [],
+    expenses: []
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [generatingReport, setGeneratingReport] = useState(false);
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -48,7 +59,8 @@ const Dashboard = () => {
       setDashboardData({
         stats: data.stats || [],
         recentActivity: data.recentActivity || [],
-        additionalData: data.additionalData || {}
+        additionalData: data.additionalData || {},
+        ...data // Include all other data properties
       });
       setError(null);
     } catch (err) {
@@ -56,6 +68,34 @@ const Dashboard = () => {
       setError('Failed to fetch dashboard data: ' + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch all data needed for the report
+  const fetchReportData = async () => {
+    try {
+      setGeneratingReport(true);
+      
+      // Fetch all required data for the report
+      const [products, sales, expenses] = await Promise.all([
+        productService.getProducts(),
+        salesService.getSales(),
+        expenseService.getExpenses()
+      ]);
+      
+      setReportData({
+        products,
+        sales,
+        expenses
+      });
+      
+      return true;
+    } catch (err) {
+      console.error('Error fetching report data:', err);
+      setError('Failed to fetch report data: ' + err.message);
+      return false;
+    } finally {
+      setGeneratingReport(false);
     }
   };
 
@@ -114,7 +154,32 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+        <PDFDownloadLink 
+          document={
+            <DashboardReport 
+              dashboardData={dashboardData} 
+              products={reportData.products} 
+              sales={reportData.sales} 
+              expenses={reportData.expenses} 
+            />
+          } 
+          fileName="dashboard-report.pdf"
+          className="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={async () => {
+            const success = await fetchReportData();
+            return !success; // Prevent download if data fetch failed
+          }}
+        >
+          {({ loading }) => (
+            <>
+              <FaDownload className="mr-2" />
+              {loading || generatingReport ? 'Generating Report...' : 'Download Report'}
+            </>
+          )}
+        </PDFDownloadLink>
+      </div>
       
       {/* Add API test component for debugging */}
       <div className="mb-6">

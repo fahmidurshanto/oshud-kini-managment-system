@@ -18,6 +18,7 @@ import ProcessSalary from '../components/ProcessSalary';
 import AddSalary from '../components/AddSalary';
 import EditSalary from '../components/EditSalary';
 import ViewSalary from '../components/ViewSalary';
+import EmailVerification from '../pages/EmailVerification'; // Import EmailVerification page
 import ProtectedRoute from '../components/ProtectedRoute';
 import RedirectIfAuthenticated from '../components/RedirectIfAuthenticated';
 import TestAuth from '../pages/TestAuth';
@@ -104,6 +105,10 @@ const routes = createBrowserRouter([
   {
     path: '/register',
     element: <RedirectIfAuthenticated><Register /></RedirectIfAuthenticated>
+  },
+  {
+    path: '/verify-email', // Add email verification route
+    element: <EmailVerification />
   }
 ]);
 

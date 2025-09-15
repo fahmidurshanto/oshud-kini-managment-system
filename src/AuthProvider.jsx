@@ -6,7 +6,8 @@ import {
   signOut, 
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  reload
 } from 'firebase/auth';
 import { AuthContext } from './contexts/AuthContext';
 
@@ -41,6 +42,9 @@ const AuthProvider = ({ children }) => {
     try {
       console.log('Logging in user with email:', email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Reload user to get the latest email verification status
+      await reload(userCredential.user);
       
       // Check if email is verified
       if (!userCredential.user.emailVerified) {

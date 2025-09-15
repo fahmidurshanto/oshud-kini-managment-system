@@ -54,12 +54,13 @@ const Sell = () => {
           : item
       ));
     } else {
-      // Add new item to cart
+      // Add new item to cart with editable price
       const newItem = {
         _id: product._id,
         name: product.name,
         quantity: 1,
-        price: product.price,
+        price: product.price, // This will be the editable price
+        originalPrice: product.price, // Store original price for reference
         total: product.price
       };
       setCartItems([...cartItems, newItem]);
@@ -78,6 +79,16 @@ const Sell = () => {
     setCartItems(cartItems.map(item => 
       item._id === productId 
         ? { ...item, quantity, total: quantity * item.price }
+        : item
+    ));
+  };
+
+  // Update item price in cart
+  const updatePrice = (productId, price) => {
+    const newPrice = parseFloat(price) || 0;
+    setCartItems(cartItems.map(item => 
+      item._id === productId 
+        ? { ...item, price: newPrice, total: item.quantity * newPrice }
         : item
     ));
   };
@@ -117,7 +128,8 @@ const Sell = () => {
           productId: item._id,
           name: item.name,
           quantity: item.quantity,
-          price: item.price
+          price: item.price, // Use the editable price
+          originalPrice: item.originalPrice // Include original price for reference
         })),
         totalAmount: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
       };
@@ -240,7 +252,7 @@ const Sell = () => {
                           onClick={() => addToCart(product)}
                           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
                         >
-                          Add to Cart
+                          Add to Cart (Price: ৳{product.price.toLocaleString()})
                         </button>
                       </td>
                     </tr>
@@ -309,9 +321,21 @@ const Sell = () => {
                       >
                         <td className="px-4 py-2 text-sm">
                           <div className="font-medium">{item.name}</div>
+                          {item.originalPrice !== item.price && (
+                            <div className="text-xs text-gray-500">
+                              Original: ৳{item.originalPrice.toLocaleString()}
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-2 text-right">
-                          <div className="text-sm text-gray-900">৳{item.price.toLocaleString()}</div>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={item.price}
+                            onChange={(e) => updatePrice(item._id, e.target.value)}
+                            className="w-24 px-2 py-1 border border-gray-300 rounded-md text-right"
+                          />
                         </td>
                         <td className="px-4 py-2 text-right">
                           <div className="flex items-center justify-end">
@@ -347,6 +371,7 @@ const Sell = () => {
                         </td>
                       </tr>
                     ))}
+
                   </tbody>
                 </table>
               )}

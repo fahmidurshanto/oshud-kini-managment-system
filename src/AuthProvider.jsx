@@ -41,6 +41,12 @@ const AuthProvider = ({ children }) => {
     try {
       console.log('Logging in user with email:', email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Check if email is verified
+      if (!userCredential.user.emailVerified) {
+        throw new Error('Please verify your email before logging in. Check your inbox for the verification email.');
+      }
+      
       console.log('User logged in successfully:', userCredential.user.uid);
       setCurrentUser(userCredential.user);
       return userCredential.user;

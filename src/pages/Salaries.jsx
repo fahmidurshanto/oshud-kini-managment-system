@@ -3,6 +3,7 @@ import { FaPlus, FaHistory, FaEdit, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import * as salaryService from '../services/salaryService';
+import Swal from 'sweetalert2';
 
 const SalaryManagement = () => {
   const [employees, setEmployees] = useState([]);
@@ -142,7 +143,11 @@ const SalaryManagement = () => {
   const handleSaveAdjustment = async () => {
     try {
       if (!adjustmentData.amount || !adjustmentData.reason) {
-        alert('Please fill in all fields');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Missing Fields',
+          text: 'Please fill in all fields'
+        });
         return;
       }
 
@@ -166,10 +171,19 @@ const SalaryManagement = () => {
       // Refresh the data to show updated values
       fetchData();
       
-      alert('Adjustment added successfully');
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Adjustment added successfully'
+      });
     } catch (err) {
       setError('Failed to add adjustment: ' + err.message);
       console.error('Error adding adjustment:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to add adjustment: ' + err.message
+      });
     }
   };
 
@@ -201,6 +215,11 @@ const SalaryManagement = () => {
       } catch (err) {
         setError('Failed to delete salary record: ' + err.message);
         console.error('Error deleting salary record:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to delete salary record: ' + err.message
+        });
       }
     }
   };

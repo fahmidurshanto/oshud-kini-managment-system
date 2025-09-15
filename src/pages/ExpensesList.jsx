@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as expenseService from '../services/expenseService';
+import Swal from 'sweetalert2';
 
 const ExpensesList = () => {
   const [expenses, setExpenses] = useState([]);
@@ -27,23 +28,40 @@ const ExpensesList = () => {
     }
   };
 
-  // Delete an expense
-  const handleDeleteExpense = async (expenseId) => {
-    if (!window.confirm('Are you sure you want to delete this expense?')) {
-      return;
-    }
+  const handleDeleteExpense = async (id) => {
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'You won\'t be able to revert this!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
 
-    try {
-      await expenseService.deleteExpense(expenseId);
-      
-      // Refresh expenses list
-      fetchExpenses();
-      
-      // Show success message
-      alert('Expense deleted successfully!');
-    } catch (err) {
-      setError('Failed to delete expense: ' + err.message);
-      console.error('Error deleting expense:', err);
+    if (result.isConfirmed) {
+      try {
+        await expenseService.deleteExpense(id);
+        setExpenses(expenses.filter(expense => expense._id !== id));
+        
+        // Dispatch event to notify dashboard of update
+        window.dispatchEvent(new CustomEvent('expenseUpdated'));
+        
+        // Show success message
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Expense deleted successfully!'
+        });
+      } catch (error) {
+        console.error('Error deleting expense:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to delete expense: ' + error.message
+        });
+      }
     }
   };
 

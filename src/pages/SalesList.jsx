@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import SaleInvoice from '../components/SaleInvoice';
 import * as salesService from '../services/salesService';
+import Swal from 'sweetalert2';
 
 const SalesList = () => {
   const [sales, setSales] = useState([]);
@@ -59,24 +60,41 @@ const SalesList = () => {
 
   // Delete a sale
   const handleDeleteSale = async (saleId) => {
-    if (!window.confirm('Are you sure you want to delete this sale? This will restore the product quantities.')) {
-      return;
-    }
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will restore the product quantities and update dashboard metrics.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
 
-    try {
-      await salesService.deleteSale(saleId);
-      
-      // Refresh sales list
-      fetchSales();
-      
-      // Dispatch a custom event to notify other components (like Dashboard) to refresh their data
-      window.dispatchEvent(new CustomEvent('saleDeleted'));
-      
-      // Show success message
-      alert('Sale deleted successfully!');
-    } catch (err) {
-      setError('Failed to delete sale: ' + err.message);
-      console.error('Error deleting sale:', err);
+    if (result.isConfirmed) {
+      try {
+        await salesService.deleteSale(saleId);
+        
+        // Update sales list
+        setSales(sales.filter(sale => sale._id !== saleId));
+        
+        // Dispatch event to notify dashboard of update
+        window.dispatchEvent(new CustomEvent('saleUpdated'));
+        
+        // Show success message
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Sale deleted successfully!'
+        });
+      } catch (error) {
+        console.error('Error deleting sale:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to delete sale: ' + error.message
+        });
+      }
     }
   };
 

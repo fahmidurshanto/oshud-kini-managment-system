@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as productService from '../services/productService';
 import * as salesService from '../services/salesService';
+import Swal from 'sweetalert2';
 
 const Sell = () => {
   const [products, setProducts] = useState([]);
@@ -8,7 +9,7 @@ const Sell = () => {
   const [error, setError] = useState(null);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [cart, setCart] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
   const [discount, setDiscount] = useState(0);
   const [animated, setAnimated] = useState(false);
 
@@ -43,112 +44,108 @@ const Sell = () => {
   // Add product to cart
   const addToCart = (product) => {
     // Check if product already in cart
-    const existingItem = cart.find(item => item.productId === product._id);
+    const existingItem = cartItems.find(item => item._id === product._id);
     
     if (existingItem) {
       // Increase quantity if already in cart
-      setCart(cart.map(item => 
-        item.productId === product._id 
-          ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.manualPrice }
+      setCartItems(cartItems.map(item => 
+        item._id === product._id 
+          ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
           : item
       ));
     } else {
-      // Add new item to cart with manual price field
+      // Add new item to cart
       const newItem = {
-        productId: product._id,
-        productName: product.name,
+        _id: product._id,
+        name: product.name,
         quantity: 1,
-        price: product.price, // Original product price
-        manualPrice: product.price, // Manual price (editable)
+        price: product.price,
         total: product.price
       };
-      setCart([...cart, newItem]);
+      setCartItems([...cartItems, newItem]);
     }
   };
 
   // Remove item from cart
   const removeFromCart = (productId) => {
-    setCart(cart.filter(item => item.productId !== productId));
+    setCartItems(cartItems.filter(item => item._id !== productId));
   };
 
   // Update item quantity in cart
   const updateQuantity = (productId, quantity) => {
     if (quantity < 1) return;
     
-    setCart(cart.map(item => 
-      item.productId === productId 
-        ? { ...item, quantity, total: quantity * item.manualPrice }
+    setCartItems(cartItems.map(item => 
+      item._id === productId 
+        ? { ...item, quantity, total: quantity * item.price }
         : item
     ));
   };
 
-  // Update manual price in cart
-  const updateManualPrice = (productId, manualPrice) => {
-    if (manualPrice < 0) return;
-    
-    setCart(cart.map(item => 
-      item.productId === productId 
-        ? { 
-            ...item, 
-            manualPrice, 
-            total: item.quantity * manualPrice
-          }
-        : item
-    ));
-  };
-
-  // Calculate cart totals
+  // Calculate totals
   const calculateTotals = () => {
-    const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     const finalTotal = subtotal - discount;
     return { subtotal, finalTotal };
   };
 
   // Process sale
-  const processSale = async () => {
-    if (!customerName.trim()) {
-      setError('Please enter customer name');
+  const handleProcessSale = async () => {
+    if (cartItems.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Empty Cart',
+        text: 'Please add products to the cart before processing sale'
+      });
       return;
     }
-    
-    if (cart.length === 0) {
-      setError('Please add items to the cart');
+
+    if (!customerName.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing Information',
+        text: 'Please enter customer name'
+      });
       return;
     }
 
     try {
-      calculateTotals();
-      
       const saleData = {
-        customerName,
-        customerPhone, // Include customer phone in sale data
-        items: cart.map(item => ({
-          productId: item.productId,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        items: cartItems.map(item => ({
+          productId: item._id,
+          name: item.name,
           quantity: item.quantity,
-          price: item.manualPrice // Use manual price for the sale
+          price: item.price
         })),
-        discount
+        totalAmount: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
       };
 
       await salesService.createSale(saleData);
       
-      // Reset form
+      // Clear cart and form
+      setCartItems([]);
       setCustomerName('');
       setCustomerPhone('');
-      setCart([]);
-      setDiscount(0);
-      
-      // Dispatch a custom event to notify other components (like Dashboard) to refresh their data
-      window.dispatchEvent(new CustomEvent('saleCreated'));
+      setDiscount(0); // Reset discount as well
       
       // Show success message
-      alert('Sale processed successfully!');
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Sale processed successfully!'
+      });
       
-      // Refresh products to show updated quantities
-      fetchProducts();
-    } catch (err) {
-      setError('Failed to process sale: ' + err.message);
-      console.error('Error processing sale:', err);
+      // Dispatch event to notify dashboard of update
+      window.dispatchEvent(new CustomEvent('saleUpdated'));
+    } catch (error) {
+      console.error('Error processing sale:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to process sale: ' + error.message
+      });
     }
   };
 
@@ -288,7 +285,7 @@ const Sell = () => {
             </div>
             
             <div className="border rounded-md mb-4 max-h-60 overflow-y-auto">
-              {cart.length === 0 ? (
+              {cartItems.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
                   <p>No items in cart</p>
                 </div>
@@ -304,29 +301,22 @@ const Sell = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {cart.map((item, index) => (
+                    {cartItems.map((item, index) => (
                       <tr 
-                        key={item.productId} 
+                        key={item._id} 
                         className={`border-b ${animated ? 'animate__animated animate__fadeIn' : ''}`}
                         style={{ animationDelay: `${index * 0.05}s` }}
                       >
                         <td className="px-4 py-2 text-sm">
-                          <div className="font-medium">{item.productName}</div>
+                          <div className="font-medium">{item.name}</div>
                         </td>
                         <td className="px-4 py-2 text-right">
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.manualPrice}
-                            onChange={(e) => updateManualPrice(item.productId, parseFloat(e.target.value) || 0)}
-                            className="w-20 px-1 py-1 border border-gray-300 rounded-md text-right"
-                          />
+                          <div className="text-sm text-gray-900">৳{item.price.toLocaleString()}</div>
                         </td>
                         <td className="px-4 py-2 text-right">
                           <div className="flex items-center justify-end">
                             <button 
-                              onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                              onClick={() => updateQuantity(item._id, item.quantity - 1)}
                               className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded-l"
                             >
                               -
@@ -335,11 +325,11 @@ const Sell = () => {
                               type="number"
                               min="1"
                               value={item.quantity}
-                              onChange={(e) => updateQuantity(item.productId, parseInt(e.target.value) || 1)}
+                              onChange={(e) => updateQuantity(item._id, parseInt(e.target.value) || 1)}
                               className="w-12 text-center border-t border-b"
                             />
                             <button 
-                              onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                              onClick={() => updateQuantity(item._id, item.quantity + 1)}
                               className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded-r"
                             >
                               +
@@ -349,7 +339,7 @@ const Sell = () => {
                         <td className="px-4 py-2 text-right text-sm">৳{item.total.toLocaleString()}</td>
                         <td className="px-4 py-2 text-right">
                           <button 
-                            onClick={() => removeFromCart(item.productId)}
+                            onClick={() => removeFromCart(item._id)}
                             className="text-red-600 hover:text-red-900"
                           >
                             Remove
@@ -385,10 +375,10 @@ const Sell = () => {
               </div>
               
               <button 
-                onClick={processSale}
-                disabled={cart.length === 0 || !customerName.trim()}
+                onClick={handleProcessSale}
+                disabled={cartItems.length === 0 || !customerName.trim()}
                 className={`w-full py-2 px-4 rounded-md font-medium ${
-                  cart.length === 0 || !customerName.trim()
+                  cartItems.length === 0 || !customerName.trim()
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-green-600 hover:bg-green-700 text-white'
                 } ${animated ? 'animate__animated animate__pulse' : ''}`}

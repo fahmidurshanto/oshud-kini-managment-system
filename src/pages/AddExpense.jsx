@@ -1,56 +1,64 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as expenseService from '../services/expenseService';
+import Swal from 'sweetalert2';
 
 const AddExpense = () => {
   const [purpose, setPurpose] = useState('');
   const [amount, setAmount] = useState('');
-  const [expenseDate, setExpenseDate] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [date, setDate] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form
-    if (!purpose.trim()) {
-      setError('Please enter expense purpose');
+    // Basic validation
+    if (!purpose.trim() || !amount || !date) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing Information',
+        text: 'Please fill in all fields'
+      });
       return;
     }
     
-    if (!amount || amount <= 0) {
-      setError('Please enter a valid amount');
+    if (amount <= 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Amount',
+        text: 'Amount must be greater than zero'
+      });
       return;
     }
-    
+
     try {
-      setLoading(true);
-      setError(null);
-      
       const expenseData = {
         purpose,
         amount: parseFloat(amount),
-        expenseDate: expenseDate || new Date().toISOString().split('T')[0]
+        date
       };
-      
+
       await expenseService.createExpense(expenseData);
       
       // Show success message
-      alert('Expense added successfully!');
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Expense added successfully!'
+      }).then(() => {
+        // Redirect to expenses list
+        navigate('/expenses');
+      });
       
-      // Reset form
-      setPurpose('');
-      setAmount('');
-      setExpenseDate('');
-      
-      // Navigate to expenses list
-      navigate('/expenses');
-    } catch (err) {
-      setError('Failed to add expense: ' + err.message);
-      console.error('Error adding expense:', err);
-    } finally {
-      setLoading(false);
+      // Dispatch event to notify dashboard of update
+      window.dispatchEvent(new CustomEvent('expenseUpdated'));
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to add expense: ' + error.message
+      });
     }
   };
 
@@ -61,12 +69,6 @@ const AddExpense = () => {
       </div>
       
       <div className="bg-white rounded-lg shadow-md p-4 md:p-6 max-w-2xl">
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
-        
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="purpose" className="block text-sm font-medium text-gray-700 mb-1">
@@ -99,14 +101,14 @@ const AddExpense = () => {
           </div>
           
           <div className="mb-6">
-            <label htmlFor="expenseDate" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
               Expense Date
             </label>
             <input
               type="date"
-              id="expenseDate"
-              value={expenseDate}
-              onChange={(e) => setExpenseDate(e.target.value)}
+              id="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -114,10 +116,9 @@ const AddExpense = () => {
           <div className="flex space-x-4">
             <button
               type="submit"
-              disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-              {loading ? 'Adding Expense...' : 'Add Expense'}
+              Add Expense
             </button>
             
             <button

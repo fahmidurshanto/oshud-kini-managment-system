@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { auth } from '../firebase.config';
 import { applyActionCode } from 'firebase/auth';
+import Swal from 'sweetalert2';
 
 const EmailVerification = () => {
   const [searchParams] = useSearchParams();
@@ -23,15 +24,31 @@ const EmailVerification = () => {
         // Apply the email verification code
         await applyActionCode(auth, oobCode);
         setVerificationStatus('success');
+        
+        // Show success message
+        Swal.fire({
+          title: 'Success!',
+          text: 'Your email has been successfully verified!',
+          icon: 'success',
+          confirmButtonText: 'Continue to Dashboard'
+        }).then(() => {
+          navigate('/dashboard');
+        });
       } catch (err) {
         console.error('Email verification error:', err);
         setVerificationStatus('error');
         setError(err.message || 'Failed to verify email');
+        Swal.fire({
+          title: 'Error!',
+          text: err.message || 'Failed to verify email',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     };
 
     verifyEmail();
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -74,10 +91,10 @@ const EmailVerification = () => {
                 Your email has been successfully verified!
               </p>
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/dashboard')}
                 className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Go to Login
+                Continue to Dashboard
               </button>
             </div>
           )}

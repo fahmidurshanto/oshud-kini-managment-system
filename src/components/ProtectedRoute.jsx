@@ -1,21 +1,23 @@
 import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import EmailVerificationRequired from './EmailVerificationRequired';
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
-  
-  console.log('ProtectedRoute check. Current user:', currentUser ? currentUser.uid : 'null');
-  console.log('Current user object:', currentUser);
-  
-  // If there's no current user, redirect to login
+  const location = useLocation();
+
+  // If no user is logged in, redirect to login page
   if (!currentUser) {
-    console.log('No current user, redirecting to login');
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  
-  console.log('User authenticated, rendering children');
-  // Otherwise, render the children
+
+  // If user is logged in but email is not verified, show verification required page
+  if (currentUser && !currentUser.emailVerified) {
+    return <EmailVerificationRequired />;
+  }
+
+  // If user is logged in and email is verified, allow access to protected routes
   return children;
 };
 

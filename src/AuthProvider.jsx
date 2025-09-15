@@ -10,7 +10,6 @@ import {
   reload
 } from 'firebase/auth';
 import Swal from 'sweetalert2';
-import { AuthContext } from './contexts/AuthContext';
 
 // Auth Provider Component
 const AuthProvider = ({ children }) => {

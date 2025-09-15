@@ -91,6 +91,8 @@ const OTPVerification = () => {
           text: 'Email verified successfully!',
           icon: 'success',
           confirmButtonText: 'OK'
+        }).then(() => {
+          navigate('/dashboard');
         });
       } else {
         // Custom OTP verification
@@ -102,13 +104,17 @@ const OTPVerification = () => {
             text: 'Email verified successfully!',
             icon: 'success',
             confirmButtonText: 'OK'
+          }).then(() => {
+            // Reload user to update verification status
+            const user = auth.currentUser;
+            if (user) {
+              reload(user).then(() => {
+                navigate('/dashboard');
+              });
+            } else {
+              navigate('/dashboard');
+            }
           });
-          
-          // Reload user to update verification status
-          const user = auth.currentUser;
-          if (user) {
-            await reload(user);
-          }
         }
       }
     } catch (err) {
@@ -253,10 +259,10 @@ const OTPVerification = () => {
                 Your email has been successfully verified!
               </p>
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/dashboard')}
                 className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Go to Login
+                Continue to Dashboard
               </button>
             </div>
           )}

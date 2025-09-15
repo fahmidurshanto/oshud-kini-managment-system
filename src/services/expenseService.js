@@ -43,6 +43,22 @@ export const createExpense = async (expenseData) => {
   }
 };
 
+// Function to update an existing expense record using backend API (without authentication)
+export const updateExpense = async (expenseId, expenseData) => {
+  try {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const response = await apiClient.put(`/expenses/${expenseId}`, expenseData);
+    
+    console.log('Successfully updated expense');
+    return response.data;
+  } catch (error) {
+    console.error('Error updating expense:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to update expense');
+  }
+};
+
 // Function to delete an expense record using backend API (without authentication)
 export const deleteExpense = async (expenseId) => {
   try {

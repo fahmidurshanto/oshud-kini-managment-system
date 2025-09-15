@@ -7,6 +7,8 @@ const ExpensesList = () => {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editAmount, setEditAmount] = useState('');
   const navigate = useNavigate();
 
   // Fetch expenses on component mount
@@ -26,6 +28,65 @@ const ExpensesList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditClick = (expense) => {
+    setEditingId(expense._id);
+    setEditAmount(expense.amount.toString());
+  };
+
+  const handleSaveEdit = async (id) => {
+    try {
+      const newAmount = parseFloat(editAmount);
+      if (isNaN(newAmount) || newAmount <= 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Amount',
+          text: 'Please enter a valid amount greater than zero'
+        });
+        return;
+      }
+
+      // Update the expense with the new amount
+      const updatedExpense = {
+        ...expenses.find(exp => exp._id === id),
+        amount: newAmount
+      };
+
+      // Call the update service (you might need to implement this in expenseService)
+      await expenseService.updateExpense(id, updatedExpense);
+      
+      // Update the local state
+      setExpenses(expenses.map(exp => 
+        exp._id === id ? { ...exp, amount: newAmount } : exp
+      ));
+      
+      // Exit edit mode
+      setEditingId(null);
+      setEditAmount('');
+      
+      // Dispatch event to notify dashboard of update
+      window.dispatchEvent(new CustomEvent('expenseUpdated'));
+      
+      // Show success message
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Expense updated successfully!'
+      });
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to update expense: ' + error.message
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditAmount('');
   };
 
   const handleDeleteExpense = async (id) => {
@@ -163,17 +224,52 @@ const ExpensesList = () => {
                       </div>
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm font-medium text-gray-900">
-                        ৳{expense.amount.toLocaleString()}
-                      </div>
+                      {editingId === expense._id ? (
+                        <div className="flex items-center justify-end space-x-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={editAmount}
+                            onChange={(e) => setEditAmount(e.target.value)}
+                            className="w-24 px-2 py-1 border border-gray-300 rounded-md text-right"
+                          />
+                          <button
+                            onClick={() => handleSaveEdit(expense._id)}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-2 rounded text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-sm font-medium text-gray-900">
+                          ৳{expense.amount.toLocaleString()}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleDeleteExpense(expense._id)}
-                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                      >
-                        Delete
-                      </button>
+                      {editingId === expense._id ? null : (
+                        <>
+                          <button
+                            onClick={() => handleEditClick(expense)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mr-2"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExpense(expense._id)}
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}

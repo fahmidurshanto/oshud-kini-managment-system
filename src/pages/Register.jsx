@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { auth } from '../firebase.config';
 import { sendEmailVerification } from 'firebase/auth';
+import Swal from 'sweetalert2';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
+  const [verificationMethod, setVerificationMethod] = useState('link'); // 'link' or 'otp'
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -24,6 +26,11 @@ const Register = () => {
       return;
     }
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -33,8 +40,23 @@ const Register = () => {
       await sendEmailVerification(user);
       setVerificationSent(true);
       setVerificationEmail(email);
+      
+      // Show success message with SweetAlert
+      Swal.fire({
+        title: 'Success!',
+        text: 'Account created successfully. Please check your email for verification.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
     } catch (err) {
+      console.error('Registration error:', err);
       setError(err.message || 'Failed to register');
+      Swal.fire({
+        title: 'Error!',
+        text: err.message || 'Failed to register',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setLoading(false);
     }
@@ -45,10 +67,21 @@ const Register = () => {
       const user = auth.currentUser;
       if (user) {
         await sendEmailVerification(user);
-        setError('Verification email resent successfully. Please check your inbox.');
+        Swal.fire({
+          title: 'Success!',
+          text: 'Verification email resent successfully. Please check your inbox.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
       }
     } catch (err) {
       setError('Failed to resend verification email: ' + err.message);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to resend verification email: ' + err.message,
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 
@@ -70,19 +103,50 @@ const Register = () => {
           </div>
           <div className="bg-white shadow rounded-lg p-6">
             <p className="text-center text-gray-700 mb-4">
-              We've sent a verification email to:
+              We've sent a verification {verificationMethod === 'link' ? 'link' : 'code'} to:
             </p>
             <p className="text-center font-bold text-blue-600 mb-6">
               {verificationEmail}
             </p>
             <p className="text-center text-gray-700 mb-6">
-              Please check your inbox and click the verification link to complete your registration.
+              {verificationMethod === 'link' 
+                ? 'Please check your inbox and click the verification link to complete your registration.' 
+                : 'Please check your inbox for the 6-digit code and enter it to complete your registration.'}
             </p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Verification Method:
+              </label>
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setVerificationMethod('link')}
+                  className={`flex-1 py-2 px-4 border rounded-md text-sm font-medium ${
+                    verificationMethod === 'link'
+                      ? 'bg-blue-100 border-blue-500 text-blue-700'
+                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Email Link
+                </button>
+                <button
+                  onClick={() => setVerificationMethod('otp')}
+                  className={`flex-1 py-2 px-4 border rounded-md text-sm font-medium ${
+                    verificationMethod === 'otp'
+                      ? 'bg-blue-100 border-blue-500 text-blue-700'
+                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  OTP Code
+                </button>
+              </div>
+            </div>
+            
             <button
               onClick={handleResendVerification}
               className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              Resend Verification Email
+              Resend Verification {verificationMethod === 'link' ? 'Link' : 'Code'}
             </button>
             <div className="mt-4 text-center">
               <button

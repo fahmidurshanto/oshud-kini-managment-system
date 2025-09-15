@@ -19,6 +19,7 @@ import AddSalary from '../components/AddSalary';
 import EditSalary from '../components/EditSalary';
 import ViewSalary from '../components/ViewSalary';
 import EmailVerification from '../pages/EmailVerification'; // Import EmailVerification page
+import OTPVerification from '../pages/OTPVerification'; // Import OTPVerification page
 import ProtectedRoute from '../components/ProtectedRoute';
 import RedirectIfAuthenticated from '../components/RedirectIfAuthenticated';
 import TestAuth from '../pages/TestAuth';
@@ -109,6 +110,10 @@ const routes = createBrowserRouter([
   {
     path: '/verify-email', // Add email verification route
     element: <EmailVerification />
+  },
+  {
+    path: '/verify-otp', // Add OTP verification route
+    element: <OTPVerification />
   }
 ]);
 

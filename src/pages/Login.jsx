@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import Swal from 'sweetalert2';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -30,8 +31,19 @@ const Login = () => {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch (err) {
-      setError(err.message || 'Failed to login');
+      // Show success message
+      Swal.fire({
+        title: 'Success!',
+        text: 'Logged in successfully!',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      // Error is already handled in AuthProvider with SweetAlert
+      console.log('Login error handled by AuthProvider');
+      // We need to use the error variable to satisfy eslint
+      console.log('Error details:', error.message);
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ import {
   signInWithPopup,
   reload
 } from 'firebase/auth';
+import Swal from 'sweetalert2';
 import { AuthContext } from './contexts/AuthContext';
 
 // Auth Provider Component
@@ -22,9 +23,11 @@ const AuthProvider = ({ children }) => {
       console.log('Registering user with email:', email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       // Update the user's display name
-      await userCredential.user.updateProfile({
-        displayName: name
-      });
+      if (name) {
+        await userCredential.user.updateProfile({
+          displayName: name
+        });
+      }
       setCurrentUser({
         ...userCredential.user,
         name: name
@@ -33,6 +36,12 @@ const AuthProvider = ({ children }) => {
       return userCredential.user;
     } catch (error) {
       console.error('Registration error:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: error.message || 'Failed to register',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
       throw new Error(error.message || 'Failed to register');
     }
   };
@@ -48,6 +57,13 @@ const AuthProvider = ({ children }) => {
       
       // Check if email is verified
       if (!userCredential.user.emailVerified) {
+        // Show SweetAlert instead of throwing error directly
+        await Swal.fire({
+          title: 'Email Not Verified',
+          text: 'Please verify your email before logging in. Check your inbox for the verification email.',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
         throw new Error('Please verify your email before logging in. Check your inbox for the verification email.');
       }
       
@@ -56,6 +72,12 @@ const AuthProvider = ({ children }) => {
       return userCredential.user;
     } catch (error) {
       console.error('Login error:', error);
+      Swal.fire({
+        title: 'Login Error',
+        text: error.message || 'Failed to login',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
       throw new Error(error.message || 'Failed to login');
     }
   };
@@ -71,6 +93,12 @@ const AuthProvider = ({ children }) => {
       return result.user;
     } catch (error) {
       console.error('Google sign in error:', error);
+      Swal.fire({
+        title: 'Google Sign-In Error',
+        text: error.message || 'Failed to sign in with Google',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
       throw new Error(error.message || 'Failed to sign in with Google');
     }
   };
@@ -82,8 +110,20 @@ const AuthProvider = ({ children }) => {
       await signOut(auth);
       setCurrentUser(null);
       console.log('User logged out successfully');
+      Swal.fire({
+        title: 'Logged Out',
+        text: 'You have been successfully logged out.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
     } catch (error) {
       console.error('Logout error:', error);
+      Swal.fire({
+        title: 'Logout Error',
+        text: error.message || 'Failed to logout',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
       throw new Error(error.message || 'Failed to logout');
     }
   };
